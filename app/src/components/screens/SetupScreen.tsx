@@ -4,11 +4,12 @@ import { loadManifest } from '../../game/scenarios'
 import type { Manifest } from '../../game/types'
 import { cls, fmt } from '../../util'
 import { diagnose } from '../../game/profile'
+import { BrandHero } from '../BrandLogo'
 
 const DIFFS = [
   { k: 'beginner', label: '초보자', desc: '변동성 낮은 종목 · Tip 3회' },
   { k: 'normal', label: '기본', desc: '균형 잡힌 난이도 · Tip 2회' },
-  { k: 'advanced', label: '고급', desc: '고변동 · 공매도 · Tip 1회' },
+  { k: 'advanced', label: '고급', desc: '고변동 종목 · Tip 1회' },
 ] as const
 
 const MARKETS = [
@@ -46,9 +47,9 @@ export default function SetupScreen() {
   return (
     <div className="screen setup">
       <section className="hero">
-        <div className="eyebrow">REAL CHART SIMULATION · v0.4</div>
-        <h1>캔들<span className="accent">런</span></h1>
-        <p>실제 국내주식 차트로 즐기는 투자 감각 트레이닝.<br />블라인드 차트를 읽고, 매수·관망·청산을 결정하세요.</p>
+        <div className="eyebrow">REAL CHART SIMULATION · v0.5</div>
+        <BrandHero />
+        <p>실제 국내주식 차트로 즐기는 투자 감각 트레이닝.<br />블라인드 차트를 읽고, LONG·SHORT·패스를 결정하세요.</p>
         {manifest && (
           <div className="data-badges">
             <span className="dbadge">시나리오 {fmt(manifest.count)}개</span>

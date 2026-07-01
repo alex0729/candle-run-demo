@@ -4,16 +4,21 @@ import type { IndicatorFlags } from '../game/types'
 export interface ChartColors {
   up: string; down: string; gold: string; ma5: string; ma20: string; ma60: string
   tenkan: string; kijun: string; chikou: string; line: string; text: string
+  axis: string; volUp: string; volDown: string
 }
 
 export function readColors(): ChartColors {
   const cs = getComputedStyle(document.documentElement)
-  const v = (n: string) => cs.getPropertyValue(n).trim()
+  const v = (n: string, fb: string) => cs.getPropertyValue(n).trim() || fb
   return {
-    up: v('--up'), down: v('--down'), gold: v('--gold'),
-    ma5: v('--ma5'), ma20: v('--ma20'), ma60: v('--ma60'),
-    tenkan: v('--tenkan'), kijun: v('--kijun'), chikou: v('--chikou'),
-    line: 'rgba(255,255,255,.05)', text: v('--txt'),
+    up: v('--up', '#f0334b'), down: v('--down', '#2f6bff'), gold: v('--gold', '#e8a300'),
+    ma5: v('--ma5', '#495168'), ma20: v('--ma20', '#e8a300'), ma60: v('--ma60', '#0891b2'),
+    tenkan: v('--tenkan', '#38bdf8'), kijun: v('--kijun', '#fb7185'), chikou: v('--chikou', '#c084fc'),
+    line: v('--chart-grid', 'rgba(20,30,50,.07)'),
+    text: v('--txt', '#171c26'),
+    axis: v('--chart-axis', 'rgba(30,40,60,.5)'),
+    volUp: v('--chart-vol-up', 'rgba(240,51,75,.55)'),
+    volDown: v('--chart-vol-down', 'rgba(47,107,255,.5)'),
   }
 }
 
@@ -73,7 +78,7 @@ export function drawChart(
   for (let gr = 0; gr <= 4; gr++) {
     const y = padT + (priceH * gr) / 4
     c.beginPath(); c.moveTo(padL, y); c.lineTo(W - padR, y); c.stroke()
-    c.fillStyle = 'rgba(255,255,255,.28)'; c.textAlign = 'left'
+    c.fillStyle = COL.axis; c.textAlign = 'left'
     c.fillText(fmtPx(mx - ((mx - mn) * gr) / 4), padL + 2, y - 3)
   }
 
@@ -108,7 +113,7 @@ export function drawChart(
   // moving averages
   if (flags.ma) {
     const mline = (arr: number[], color: string) => { c.strokeStyle = color; c.lineWidth = 1.4; c.beginPath(); let st = false; for (let i = drawStart; i <= Math.min(drawEnd, L); i++) { const v = arr[i]; if (!isFinite(v)) continue; const x = xAt(i), y = yAt(v); st ? c.lineTo(x, y) : c.moveTo(x, y); st = true } c.stroke() }
-    mline(I.ma60, COL.ma60); mline(I.ma20, COL.ma20); mline(I.ma5, 'rgba(232,235,242,.7)')
+    mline(I.ma60, COL.ma60); mline(I.ma20, COL.ma20); mline(I.ma5, COL.ma5)
   }
 
   // chikou
@@ -166,10 +171,10 @@ export function drawChart(
   if (volOn) {
     let vmx = 0; for (let i = drawStart; i <= Math.min(drawEnd, L); i++) vmx = Math.max(vmx, d[i].v)
     const vy0 = H - volH
-    c.fillStyle = 'rgba(255,255,255,.25)'; c.font = '9px JetBrains Mono'; c.textAlign = 'left'; c.fillText('VOL', padL + 2, vy0 + 10)
+    c.fillStyle = COL.axis; c.font = '9px JetBrains Mono'; c.textAlign = 'left'; c.fillText('VOL', padL + 2, vy0 + 10)
     for (let i = drawStart; i <= Math.min(drawEnd, L); i++) {
       const bar = d[i], x = xAt(i), up = bar.c >= bar.o, h = Math.max(1, (bar.v / vmx) * (volH - 6))
-      c.fillStyle = up ? 'rgba(255,71,87,.55)' : 'rgba(59,130,246,.55)'
+      c.fillStyle = up ? COL.volUp : COL.volDown
       c.fillRect(x - bw / 2, H - h, bw, h)
     }
   }

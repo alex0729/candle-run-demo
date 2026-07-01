@@ -1,0 +1,8 @@
+# dependencies
+app/node_modules/
+node_modules/
+# vite cache
+app/.vite/
+# os
+.DS_Store
+*.log

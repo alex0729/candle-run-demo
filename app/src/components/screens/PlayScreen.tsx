@@ -61,17 +61,27 @@ export default function PlayScreen() {
         )}
       </div>
 
-      <div className="action-bar">
+      <div className="action-area">
         {!hasPos ? (
           <>
-            <button className="btn btn-long" onClick={s.buy}>매수</button>
-            {s.settings.difficulty === 'advanced' && <button className="btn btn-short" onClick={s.short}>공매도</button>}
-            <button className="btn btn-next" onClick={s.advance}>관망</button>
+            <div className="action-primary">
+              <button className="act act-long" onClick={s.buy}><b>LONG</b><span>매수 · 오르면 수익</span></button>
+              <button className="act act-short" onClick={s.short}><b>SHORT</b><span>공매도 · 내리면 수익</span></button>
+            </div>
+            <div className="action-secondary">
+              <button className="act act-pass" onClick={s.advance}>패스 <i>다음 봉 →</i></button>
+              <button className="act act-tip" onClick={s.useTip}>Tip {g.tipRemaining}</button>
+            </div>
           </>
         ) : (
           <>
-            <button className="btn btn-exit" onClick={s.sell}>청산</button>
-            <button className="btn btn-next" onClick={s.advance}>보유</button>
+            <div className="action-primary">
+              <button className="act act-close" onClick={s.sell}><b>청산</b><span>지금 손익 확정</span></button>
+              <button className="act act-hold" onClick={s.advance}>보유 <i>다음 봉 →</i></button>
+            </div>
+            <div className="action-secondary">
+              <button className="act act-tip wide" onClick={s.useTip}>Tip {g.tipRemaining}</button>
+            </div>
           </>
         )}
       </div>

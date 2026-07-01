@@ -3,6 +3,7 @@ import { useStore } from './store/store'
 import SetupScreen from './components/screens/SetupScreen'
 import PlayScreen from './components/screens/PlayScreen'
 import ResultScreen from './components/screens/ResultScreen'
+import { BrandLogoInline } from './components/BrandLogo'
 import { fmt } from './util'
 
 export default function App() {
@@ -12,10 +13,7 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <div className="brand">
-          <span className="logo">캔들<b>런</b></span>
-          <span className="tag">CANDLE RUN v0.4</span>
-        </div>
+        <BrandLogoInline />
         <div className="wallet"><span className="coin">₩</span>페이북머니 <b>{fmt(s.wallet)}</b></div>
       </header>
 

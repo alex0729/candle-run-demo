@@ -34,10 +34,14 @@ jobs:
         working-directory: app
         run: npm run build
 
-      - name: Include v0.3 backup in the published site
+      - name: Include previous versions (backup) in the published site
         run: |
           mkdir -p app/dist/legacy
+          # v0.3 (단일 파일 프로토타입)
           cp legacy/index-v0.3.html app/dist/legacy/index-v0.3.html
+          # v0.4 (React 앱) — 자산은 저장소에서, 데이터는 v0.5와 동일하므로 공유 데이터 복사
+          cp -r legacy/v0.4 app/dist/legacy/v0.4
+          cp -r app/dist/data app/dist/legacy/v0.4/data
 
       - uses: actions/configure-pages@v5
 

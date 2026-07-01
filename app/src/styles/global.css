@@ -128,7 +128,7 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .prog-meta .sig { font-size: 12px; font-weight: 800; font-family: var(--fd); }
 .prog-track { height: 5px; border-radius: 99px; background: var(--surface2); overflow: hidden; }
 .prog-fill { height: 100%; border-radius: 99px; background: var(--up); transition: width .35s ease; }
-.chart-shell { flex: 1; display: flex; flex-direction: column; margin: 0 12px; border-radius: 18px; background: var(--bg2); border: 1px solid var(--border); overflow: hidden; min-height: 0; box-shadow: var(--shadow-sm); position: relative; }
+.chart-shell { flex: 1; display: flex; flex-direction: column; margin: 0 12px; border-radius: 0; background: var(--bg2); border: 1px solid var(--border); overflow: hidden; min-height: 0; box-shadow: var(--shadow-sm); position: relative; }
 .chart-area { flex: 1; min-height: 0; position: relative; }
 .chart-area .chart-wrap { position: absolute; inset: 0; }
 .ind-legend { position: absolute; top: 8px; left: 8px; display: flex; flex-wrap: wrap; gap: 5px; max-width: 68%; z-index: 3; }

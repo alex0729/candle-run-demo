@@ -46,7 +46,7 @@ export default function HomeScreen() {
             <span className="r">바로 시작</span>
           </div>
           <div className="rec-row"><span className="rec-num">1</span>기본 지표 4개 · MA·RSI·MACD·거래량</div>
-          <div className="rec-row"><span className="rec-num">2</span>50봉 · 종목 블라인드 · LONG/SHORT</div>
+          <div className="rec-row"><span className="rec-num">2</span>50봉 · 종목 블라인드 · 매수·공매도</div>
           <div className="rec-row"><span className="rec-num">3</span>결과에서 판단 근거·복기 제공</div>
           {m && (
             <div className="rec-row" style={{ marginTop: 4 }}><span className="rec-num">✦</span>실전 시나리오 {m.count}개 · KOSPI·KOSDAQ</div>

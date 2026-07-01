@@ -34,7 +34,7 @@ export function drawChart(
   flags: IndicatorFlags,
 ) {
   const volOn = flags.vol
-  const padL = 6, padR = 6, padT = 8
+  const padL = 6, padR = 6, padT = 12
   const volH = volOn ? Math.min(52, H * 0.18) : 0
   const gap = volOn ? 8 : 0
   const priceH = H - volH - gap - padT - 2
@@ -73,14 +73,17 @@ export function drawChart(
   const padY = (mx - mn) * 0.08; mn -= padY; mx += padY
   const yAt = (v: number) => padT + priceH - ((v - mn) / (mx - mn)) * priceH
 
-  // grid
-  c.strokeStyle = COL.line; c.lineWidth = 1; c.font = '9px JetBrains Mono'
+  // grid + 우측 가격축 라벨(직각 카드 · 잘림 방지)
+  c.strokeStyle = COL.line; c.lineWidth = 1; c.font = "600 9.5px Pretendard, sans-serif"
   for (let gr = 0; gr <= 4; gr++) {
     const y = padT + (priceH * gr) / 4
     c.beginPath(); c.moveTo(padL, y); c.lineTo(W - padR, y); c.stroke()
-    c.fillStyle = COL.axis; c.textAlign = 'left'
-    c.fillText(fmtPx(mx - ((mx - mn) * gr) / 4), padL + 2, y - 3)
+    c.fillStyle = COL.axis; c.textAlign = 'left'; c.textBaseline = 'middle'
+    // 최상단 라벨은 선 아래, 최하단은 선 위로 내려/올려 잘림 방지
+    const ly = gr === 0 ? y + 7 : gr === 4 ? y - 7 : y
+    c.fillText(fmtPx(mx - ((mx - mn) * gr) / 4), padL + 3, ly)
   }
+  c.textBaseline = 'alphabetic'
 
   // ichimoku cloud
   if (flags.ichimoku) {
@@ -149,12 +152,12 @@ export function drawChart(
       c.fillStyle = col; c.beginPath()
       if (side === 'long') { c.moveTo(0, 8); c.lineTo(-6, 18); c.lineTo(6, 18) } else { c.moveTo(0, -8); c.lineTo(-6, -18); c.lineTo(6, -18) }
       c.closePath(); c.fill()
-      c.fillStyle = '#fff'; c.font = '900 8px Noto Sans KR'; c.textAlign = 'center'
+      c.fillStyle = '#fff'; c.font = '800 8px Pretendard, sans-serif'; c.textAlign = 'center'
       c.fillText(side === 'long' ? '매수' : '공매도', 0, side === 'long' ? 30 : -22)
     } else {
       c.strokeStyle = COL.gold; c.fillStyle = 'rgba(245,179,1,.9)'; c.lineWidth = 2
       c.beginPath(); c.arc(0, 0, 5, 0, 7); c.fill()
-      c.fillStyle = COL.gold; c.font = '900 8px Noto Sans KR'; c.textAlign = 'center'; c.fillText('청산', 0, -12)
+      c.fillStyle = COL.gold; c.font = '800 8px Pretendard, sans-serif'; c.textAlign = 'center'; c.fillText('청산', 0, -12)
     }
     c.restore()
   }
@@ -171,7 +174,7 @@ export function drawChart(
   if (volOn) {
     let vmx = 0; for (let i = drawStart; i <= Math.min(drawEnd, L); i++) vmx = Math.max(vmx, d[i].v)
     const vy0 = H - volH
-    c.fillStyle = COL.axis; c.font = '9px JetBrains Mono'; c.textAlign = 'left'; c.fillText('VOL', padL + 2, vy0 + 10)
+    c.fillStyle = COL.axis; c.font = '700 8.5px Pretendard, sans-serif'; c.textAlign = 'left'; c.fillText('VOL', padL + 2, vy0 + 10)
     for (let i = drawStart; i <= Math.min(drawEnd, L); i++) {
       const bar = d[i], x = xAt(i), up = bar.c >= bar.o, h = Math.max(1, (bar.v / vmx) * (volH - 6))
       c.fillStyle = up ? COL.volUp : COL.volDown

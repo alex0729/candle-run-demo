@@ -76,7 +76,7 @@ export default function PlayScreen() {
           </div>
         </div>
         <div className="perf-card" style={hasPos ? { background: r >= 0 ? 'var(--up-soft)' : 'var(--down-soft)', borderColor: r >= 0 ? 'var(--up)' : 'var(--down)' } : undefined}>
-          <span className="lbl">{hasPos ? `평가손익 · ${g.pos!.side === 'long' ? 'LONG' : 'SHORT'} 보유중` : '포지션 없음'}</span>
+          <span className="lbl">{hasPos ? `평가손익 · ${g.pos!.side === 'long' ? '매수' : '공매도'} 보유중` : '포지션 없음'}</span>
           <span className="big" style={{ color: hasPos ? (r >= 0 ? 'var(--up)' : 'var(--down)') : 'var(--dim)', fontSize: hasPos ? 21 : 16 }}>
             {hasPos ? pct(r, 2) : '진입 대기'}
           </span>
@@ -86,8 +86,8 @@ export default function PlayScreen() {
       <div className="actionbar">
         {!hasPos ? (
           <div className="row">
-            <button className="btn btn-red g1" onClick={s.buy}>LONG</button>
-            <button className="btn btn-blue g1" onClick={s.short}>SHORT</button>
+            <button className="btn btn-red g1" onClick={s.buy}>매수</button>
+            <button className="btn btn-blue g1" onClick={s.short}>공매도</button>
             <button className="btn btn-surface g1" onClick={s.advance}>패스 ▶</button>
           </div>
         ) : (

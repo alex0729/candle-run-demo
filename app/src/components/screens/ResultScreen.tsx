@@ -73,7 +73,7 @@ export default function ResultScreen() {
 
         <div className="card best-card">
           <div className="h"><span>🎯</span>최선의 한 수 (복기)</div>
-          <p>{best.ei - g.start}봉 <b>{best.side === 'long' ? 'LONG' : 'SHORT'}</b> → {best.xi - g.start}봉 청산 시 최대 <b>{pct(best.ret)}</b> · 실제 <b>{actual}</b></p>
+          <p>{best.ei - g.start}봉 <b>{best.side === 'long' ? '매수' : '공매도'}</b> → {best.xi - g.start}봉 청산 시 최대 <b>{pct(best.ret)}</b> · 실제 <b>{actual}</b></p>
         </div>
 
         <div className="card persona">

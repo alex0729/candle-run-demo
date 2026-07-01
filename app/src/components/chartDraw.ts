@@ -164,7 +164,7 @@ export function drawChart(
   // best trade markers (reveal)
   if (mode === 'reveal' && g.best) {
     const dia = (idx: number, col: string) => { const x = xAt(idx), y = yAt(d[idx].c); c.save(); c.translate(x, y); c.rotate(Math.PI / 4); c.strokeStyle = col; c.lineWidth = 1.5; c.strokeRect(-4, -4, 8, 8); c.restore() }
-    dia(g.best.ei, 'rgba(255,255,255,.85)'); dia(g.best.xi, 'rgba(255,255,255,.85)')
+    dia(g.best.ei, COL.text); dia(g.best.xi, COL.text)
   }
 
   // volume subchart

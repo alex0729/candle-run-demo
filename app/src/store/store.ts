@@ -8,7 +8,7 @@ import {
 import { pickScenario, loadManifest } from '../game/scenarios'
 import { emptyStats, SessionStats } from '../game/profile'
 
-export type Screen = 'setup' | 'play' | 'result'
+export type Screen = 'setup' | 'play' | 'result' | 'leaderboard'
 
 interface Persisted {
   wallet: number
@@ -24,9 +24,11 @@ interface StoreState extends Persisted {
   game: GameState | null
   session: SessionStats
   walletDelta: number
+  lastRet: number
   toast: string | null
   tip: Tip | null
   tipOpen: boolean
+  showSettings: boolean
 
   init: () => Promise<void>
   setSettings: (patch: Partial<Settings>) => void
@@ -34,6 +36,10 @@ interface StoreState extends Persisted {
   startRound: () => Promise<void>
   nextRound: () => Promise<void>
   toSetup: () => void
+  goHome: () => void
+  goLeaderboard: () => void
+  openSettings: () => void
+  closeSettings: () => void
   buy: () => void
   short: () => void
   advance: () => void
@@ -97,9 +103,11 @@ export const useStore = create<StoreState>()(
       game: null,
       session: { ...emptyStats },
       walletDelta: 0,
+      lastRet: 0,
       toast: null,
       tip: null,
       tipOpen: false,
+      showSettings: false,
 
       init: async () => {
         try {
@@ -122,7 +130,7 @@ export const useStore = create<StoreState>()(
         try {
           const scn = await pickScenario(settings)
           const game = createGame(scn, settings)
-          set({ game, screen: 'play', loadingRound: false })
+          set({ game, screen: 'play', loadingRound: false, showSettings: false })
         } catch (e) {
           set({ loadingRound: false, loadError: (e as Error).message })
           get().showToast('시나리오를 불러오지 못했습니다')
@@ -130,7 +138,11 @@ export const useStore = create<StoreState>()(
       },
 
       nextRound: async () => { await get().startRound() },
-      toSetup: () => set({ screen: 'setup' }),
+      toSetup: () => set({ screen: 'setup', showSettings: false }),
+      goHome: () => set({ screen: 'setup', showSettings: false, tipOpen: false }),
+      goLeaderboard: () => set({ screen: 'leaderboard' }),
+      openSettings: () => set({ showSettings: true }),
+      closeSettings: () => set({ showSettings: false }),
 
       buy: () => enterPos(set, get, 'long'),
       short: () => enterPos(set, get, 'short'),
@@ -206,5 +218,6 @@ function finishExit(set: SetFn, get: GetFn, g: GameState) {
     session: res.session,
     lifetime: res.lifetime,
     walletDelta: res.walletDelta,
+    lastRet: g.noTrade ? 0 : (g.myRet ?? 0),
   })
 }

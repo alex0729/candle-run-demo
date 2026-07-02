@@ -245,6 +245,19 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 /* ===== Free-play hint ===== */
 .free-hint { text-align: center; font-size: 11.5px; font-weight: 600; color: var(--dim); margin-bottom: 2px; }
 
+/* ===== Buy/Short info (초보자 설명 미니팝업) ===== */
+.qmark { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; border: 1.3px solid rgba(255, 255, 255, .8); font-size: 10.5px; font-weight: 800; font-style: normal; line-height: 1; margin-left: 6px; color: #fff; opacity: .95; }
+.qmark:active { transform: scale(.88); }
+.info-pop-wrap { position: fixed; inset: 0; z-index: 45; display: flex; align-items: flex-end; justify-content: center; padding: 0 20px 96px; animation: fadeIn .2s ease; }
+.info-pop { position: relative; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); padding: 14px 16px; max-width: 300px; text-align: center; animation: fadeUp .22s ease; }
+.info-pop b { font-size: 14px; }
+.info-pop.long b { color: var(--up); } .info-pop.short b { color: var(--down); }
+.info-pop p { margin: 8px 0 0; font-size: 13px; line-height: 1.55; color: var(--text); }
+.info-pop em { font-style: normal; font-weight: 800; }
+.info-pop em.up { color: var(--up); } .info-pop em.down { color: var(--down); }
+.info-close { display: block; margin-top: 9px; font-size: 10.5px; color: var(--faint); }
+.info-pop::after { content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%) rotate(45deg); width: 14px; height: 14px; background: var(--bg2); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
 /* ===== Rewarded Ad modal (prototype) ===== */
 .ad-overlay { position: absolute; inset: 0; z-index: 40; background: rgba(10, 14, 22, .72); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn .25s ease; }
 .ad-card { width: 100%; max-width: 340px; background: var(--bg2); border-radius: 22px; padding: 20px; box-shadow: var(--shadow-md); text-align: center; animation: fadeUp .3s ease; }

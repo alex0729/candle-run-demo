@@ -13,7 +13,12 @@ export type Screen = 'setup' | 'play' | 'result' | 'leaderboard'
 interface Persisted {
   wallet: number
   lifetime: SessionStats
+  adCount: number   // 광고 이후 진행한 판 수(3판마다 리셋)
+  adDay: string     // 마지막 플레이 일자(YYYYMMDD) — 일 단위 리셋
 }
+
+export const AD_EVERY = 3   // N판마다 리워드 광고 1회
+const dayKey = () => { const d = new Date(); return `${d.getFullYear()}${d.getMonth() + 1}${d.getDate()}` }
 
 interface StoreState extends Persisted {
   ready: boolean
@@ -29,11 +34,14 @@ interface StoreState extends Persisted {
   tip: Tip | null
   tipOpen: boolean
   showSettings: boolean
+  adOpen: boolean
 
   init: () => Promise<void>
   setSettings: (patch: Partial<Settings>) => void
   toggleInd: (k: keyof Settings['ind']) => void
   startRound: () => Promise<void>
+  beginRound: () => Promise<void>
+  finishAd: () => Promise<void>
   nextRound: () => Promise<void>
   toSetup: () => void
   goHome: () => void
@@ -97,6 +105,8 @@ export const useStore = create<StoreState>()(
     (set, get) => ({
       wallet: 1_000_000,
       lifetime: { ...emptyStats },
+      adCount: 0,
+      adDay: '',
       ready: false,
       loadError: null,
       loadingRound: false,
@@ -110,6 +120,7 @@ export const useStore = create<StoreState>()(
       tip: null,
       tipOpen: false,
       showSettings: false,
+      adOpen: false,
 
       init: async () => {
         try {
@@ -124,19 +135,36 @@ export const useStore = create<StoreState>()(
       toggleInd: (k) =>
         set((s) => ({ settings: { ...s.settings, ind: { ...s.settings.ind, [k]: !s.settings.ind[k] } } })),
 
+      // 게이트: 3판마다 리워드 광고 → 광고 후 카운트 0으로 리셋
       startRound: async () => {
         const { settings } = get()
         const anyInd = Object.values(settings.ind).some(Boolean)
         if (!anyInd) { get().showToast('지표를 최소 1개 선택하세요'); return }
+        const today = dayKey()
+        let { adCount } = get()
+        if (get().adDay !== today) { adCount = 0; set({ adCount, adDay: today }) }
+        if (adCount >= AD_EVERY) { set({ adOpen: true, showSettings: false }); return }
+        await get().beginRound()
+      },
+
+      // 실제 라운드 로드(+판 카운트 증가)
+      beginRound: async () => {
+        const { settings } = get()
         set({ loadingRound: true, loadError: null })
         try {
           const scn = await pickScenario(settings)
           const game = createGame(scn, settings)
-          set({ game, screen: 'play', loadingRound: false, showSettings: false })
+          set({ game, screen: 'play', loadingRound: false, showSettings: false, adOpen: false, adCount: get().adCount + 1, adDay: dayKey() })
         } catch (e) {
           set({ loadingRound: false, loadError: (e as Error).message })
           get().showToast('시나리오를 불러오지 못했습니다')
         }
+      },
+
+      // 광고 시청 완료 → 카운트 리셋 후 라운드 시작
+      finishAd: async () => {
+        set({ adOpen: false, adCount: 0, adDay: dayKey() })
+        await get().beginRound()
       },
 
       nextRound: async () => { await get().startRound() },
@@ -187,7 +215,7 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'candlerun-v0.9',
-      partialize: (s) => ({ wallet: s.wallet, lifetime: s.lifetime }),
+      partialize: (s) => ({ wallet: s.wallet, lifetime: s.lifetime, adCount: s.adCount, adDay: s.adDay }),
     },
   ),
 )

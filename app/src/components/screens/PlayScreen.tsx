@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStore } from '../../store/store'
 import Chart from '../Chart'
 import { curPrice, pnlNow, signalAt } from '../../game/engine'
@@ -16,6 +17,7 @@ function indState(sc: Score, kind: 'ma' | 'rsi' | 'macd' | 'vol') {
 export default function PlayScreen() {
   const s = useStore()
   const g = s.game
+  const [info, setInfo] = useState<null | 'long' | 'short'>(null)
   if (!g) return null
 
   const sig = signalAt(g)
@@ -84,10 +86,21 @@ export default function PlayScreen() {
       </div>
 
       <div className="actionbar">
+        {info && (
+          <div className="info-pop-wrap" onClick={() => setInfo(null)}>
+            <div className={cls('info-pop', info)} onClick={(e) => e.stopPropagation()}>
+              <b>{info === 'long' ? '매수 (LONG)' : '공매도 (SHORT)'}</b>
+              <p>{info === 'long'
+                ? <>가격이 <em className="up">상승</em>하면 수익, 하락하면 손실이에요.</>
+                : <>가격이 <em className="down">하락</em>하면 수익, 상승하면 손실이에요.</>}</p>
+              <span className="info-close">탭하여 닫기</span>
+            </div>
+          </div>
+        )}
         {!hasPos ? (
           <div className="row">
-            <button className="btn btn-red g1" onClick={s.buy}>매수</button>
-            <button className="btn btn-blue g1" onClick={s.short}>공매도</button>
+            <button className="btn btn-red g1" onClick={s.buy}>매수<i className="qmark" onClick={(e) => { e.stopPropagation(); setInfo('long') }}>?</i></button>
+            <button className="btn btn-blue g1" onClick={s.short}>공매도<i className="qmark" onClick={(e) => { e.stopPropagation(); setInfo('short') }}>?</i></button>
             <button className="btn btn-surface g1" onClick={s.advance}>다음턴 ▶</button>
           </div>
         ) : (

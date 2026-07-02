@@ -88,7 +88,7 @@ export default function PlayScreen() {
           <div className="row">
             <button className="btn btn-red g1" onClick={s.buy}>매수</button>
             <button className="btn btn-blue g1" onClick={s.short}>공매도</button>
-            <button className="btn btn-surface g1" onClick={s.advance}>패스 ▶</button>
+            <button className="btn btn-surface g1" onClick={s.advance}>다음턴 ▶</button>
           </div>
         ) : (
           <div className="row">

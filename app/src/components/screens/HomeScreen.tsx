@@ -30,8 +30,8 @@ export default function HomeScreen() {
       <div className="scroll" style={{ paddingBottom: 8 }}>
         <div style={{ padding: '4px 0 22px' }}>
           <span className="eyebrow"><span className="dot" />REAL CHART SIMULATION</span>
-          <h1 className="hero-title">과거 차트 속에서<br />당신의 <span className="hl">매매 타이밍</span>을<br />테스트하세요</h1>
-          <p className="hero-sub">미래를 모른 채 차트·지표만으로 판단하는<br />모바일 투자 판단 학습 게임</p>
+          <h1 className="hero-title">과거 차트로<br /><span className="hl">매매 타이밍</span> 테스트</h1>
+          <p className="hero-sub">차트·지표만으로 판단 · 페이북머니 획득</p>
         </div>
 
         <div className="mini-chart">
@@ -46,7 +46,7 @@ export default function HomeScreen() {
             <span className="r">바로 시작</span>
           </div>
           <div className="rec-row"><span className="rec-num">1</span>기본 지표 4개 · MA·RSI·MACD·거래량</div>
-          <div className="rec-row"><span className="rec-num">2</span>50봉 · 종목 블라인드 · LONG/SHORT</div>
+          <div className="rec-row"><span className="rec-num">2</span>50봉 · 종목 블라인드 · 매수·공매도</div>
           <div className="rec-row"><span className="rec-num">3</span>결과에서 판단 근거·복기 제공</div>
           {m && (
             <div className="rec-row" style={{ marginTop: 4 }}><span className="rec-num">✦</span>실전 시나리오 {m.count}개 · KOSPI·KOSDAQ</div>

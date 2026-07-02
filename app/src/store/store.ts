@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { Settings, Side } from '../game/types'
 import {
   computeResult, createGame, curPrice, GameState, generateTip,
-  pnlNow, REWARD_BASE, signalAt, Tip,
+  pnlNow, signalAt, Tip,
 } from '../game/engine'
 import { pickScenario, loadManifest } from '../game/scenarios'
 import { emptyStats, SessionStats } from '../game/profile'
@@ -62,8 +62,9 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined
 function settle(state: StoreState, g: GameState) {
   computeResult(g)
   const r = g.noTrade ? 0 : g.myRet ?? 0
-  const delta = g.noTrade ? 0 : Math.round(REWARD_BASE * r)
-  const wallet = Math.max(0, state.wallet + delta)
+  // 페이북머니 = 누적 점수(항상 ≥0): 참여 300 + 성과(수익률%×120), 관망 200
+  const delta = g.noTrade ? 200 : Math.max(0, Math.round(r * 100 * 120 + 300))
+  const wallet = state.wallet + delta
 
   const acc = (base: SessionStats): SessionStats => {
     const traded = !g.noTrade && !!g.pos

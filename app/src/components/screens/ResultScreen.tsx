@@ -3,6 +3,7 @@ import { useStore } from '../../store/store'
 import Chart from '../Chart'
 import { generateReview, verdictOf } from '../../game/engine'
 import { diagnose } from '../../game/profile'
+import { myRank } from '../../game/leaderboard'
 import { cls, fmt, pct } from '../../util'
 
 export default function ResultScreen() {
@@ -42,7 +43,8 @@ export default function ResultScreen() {
           <div className="res-kicker">{g.noTrade ? '노 트레이드 · 복기' : '청산 완료 · 복기'} · {verdictOf(g)}</div>
           <div className={cls('res-big', c0)}>{g.noTrade ? '0.0%' : pct(r)}</div>
           <div className="res-sub">손익 <b>{won >= 0 ? '+' : ''}₩{fmt(won)}</b> · 가상시드 1,000만원</div>
-          <div className="reward-pill">₩ 페이북머니 <b>{s.walletDelta >= 0 ? '+' : ''}{fmt(s.walletDelta)}</b> 정산</div>
+          <div className="reward-pill">₩ 페이북머니 <b>+{fmt(s.walletDelta)}</b> 적립</div>
+          <div className="rank-hint">보유 ₩{fmt(s.wallet)} · 주간 <b>{myRank('weekly', s.wallet)}위</b></div>
         </div>
 
         <div className="card blk" style={{ padding: 8 }}>
@@ -71,7 +73,7 @@ export default function ResultScreen() {
 
         <div className="card best-card">
           <div className="h"><span>🎯</span>최선의 한 수 (복기)</div>
-          <p>{best.ei - g.start}봉 <b>{best.side === 'long' ? 'LONG' : 'SHORT'}</b> → {best.xi - g.start}봉 청산 시 최대 <b>{pct(best.ret)}</b> · 실제 <b>{actual}</b></p>
+          <p>{best.ei - g.start}봉 <b>{best.side === 'long' ? '매수' : '공매도'}</b> → {best.xi - g.start}봉 청산 시 최대 <b>{pct(best.ret)}</b> · 실제 <b>{actual}</b></p>
         </div>
 
         <div className="card persona">
@@ -84,7 +86,7 @@ export default function ResultScreen() {
         </div>
 
         <button className="cta-invest" onClick={goInvest}>{profile.cta} →</button>
-        <button className="btn btn-surface" style={{ width: '100%', marginBottom: 8 }} onClick={s.goLeaderboard}>🏆 내 랭킹 확인하기</button>
+        <button className="btn btn-surface" style={{ width: '100%', marginBottom: 8 }} onClick={s.goLeaderboard}>🏆 페이북머니 랭킹 확인하기</button>
         <div className="disclaimer">학습용 복기이며 특정 종목 추천이 아닙니다. 벤치마크는 추정치, 가상 머니로 진행됩니다.</div>
       </div>
 

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useStore } from '../../store/store'
+import { useStore, AD_EVERY } from '../../store/store'
 import { loadManifest } from '../../game/scenarios'
 import { useEffect, useState } from 'react'
 import type { Manifest } from '../../game/types'
@@ -56,6 +56,7 @@ export default function HomeScreen() {
 
       <div className="actionbar">
         <div className="col">
+          <div className="free-hint">{s.adCount >= AD_EVERY ? '다음 시작 시 짧은 광고 ▶' : `무료 플레이 ${AD_EVERY - s.adCount}판 남음 · 3판마다 짧은 광고`}</div>
           <button className="btn btn-red" onClick={quickStart} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '빠른 시작 ▶'}</button>
           <div className="row">
             <button className="btn btn-surface g1" onClick={s.openSettings}>직접 설정</button>

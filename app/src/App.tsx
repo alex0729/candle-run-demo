@@ -5,6 +5,7 @@ import PlayScreen from './components/screens/PlayScreen'
 import ResultScreen from './components/screens/ResultScreen'
 import LeaderboardScreen from './components/screens/LeaderboardScreen'
 import SettingsSheet from './components/SettingsSheet'
+import AdModal from './components/AdModal'
 import { BrandMark } from './components/BrandLogo'
 import { fmt } from './util'
 
@@ -43,6 +44,7 @@ export default function App() {
         )}
 
         <SettingsSheet />
+        <AdModal />
 
         {s.tipOpen && s.tip && (
           <>

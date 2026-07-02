@@ -49,6 +49,20 @@ jobs:
           cp -r legacy/v0.8 app/dist/legacy/v0.8
           cp -r app/dist/data app/dist/legacy/v0.8/data
 
+      - name: SPA 404 fallback (unknown path/refresh → app root)
+        run: |
+          cat > app/dist/404.html <<'HTML'
+          <!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>캔들런</title>
+          <script>
+            // GitHub Pages 프로젝트 경로로 리다이렉트(딥링크/새로고침 404 방지)
+            var base = '/' + (location.pathname.split('/')[1] || 'candle-run-demo') + '/';
+            if (location.pathname !== base) location.replace(base + location.hash);
+          </script></head>
+          <body style="background:#f3f5f8"></body></html>
+          HTML
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

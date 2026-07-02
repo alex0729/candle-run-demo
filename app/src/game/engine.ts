@@ -2,8 +2,8 @@ import type { Scenario, Settings, Side } from './types'
 import { bollinger, ichimoku, macd, rsi, sma, volumeRatio } from './indicators'
 import { getSignalScore, IndPack, SignalResult } from './signal'
 
-export const SEED_KRW = 10_000_000
-export const REWARD_BASE = 10_000
+export const SEED_KRW = 1_000_000       // 페이북겜머니 시작금액 100만원
+export const REWARD_BASE = 1_000_000
 
 export interface Position { side: Side; price: number; at: number }
 export interface BestTrade { side: Side; ret: number; ei: number; xi: number }

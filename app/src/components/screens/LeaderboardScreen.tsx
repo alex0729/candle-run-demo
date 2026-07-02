@@ -24,8 +24,8 @@ export default function LeaderboardScreen() {
       <div className="scroll">
         <div className="lb-head">
           <div className="k">LEADERBOARD</div>
-          <div className="t">🏆 페이북머니 랭킹</div>
-          <div className="lb-sub">가장 많은 페이북머니를 모은 TOP 20</div>
+          <div className="t">🏆 페이북겜머니 랭킹</div>
+          <div className="lb-sub">가장 많은 페이북겜머니를 모은 TOP 20</div>
         </div>
 
         <div className="lb-toggle">
@@ -38,13 +38,13 @@ export default function LeaderboardScreen() {
             <div className="rk">{me.rank}<small>위</small></div>
             <div className="mid">
               <div className="n">나 · YOU</div>
-              <div className="s">내 페이북머니</div>
+              <div className="s">내 페이북겜머니</div>
             </div>
             <div className="ret">₩{fmt(myMoney)}</div>
           </div>
         ) : (
           <div className="lb-me ghost">
-            <div className="mid"><div className="n">한 판이면 랭킹 등록</div><div className="s">플레이할수록 페이북머니가 쌓여요</div></div>
+            <div className="mid"><div className="n">한 판이면 랭킹 등록</div><div className="s">플레이할수록 페이북겜머니가 쌓여요</div></div>
             <button className="btn btn-red" style={{ height: 44, padding: '0 18px' }} onClick={() => s.startRound()}>시작 ▶</button>
           </div>
         )}
@@ -58,13 +58,13 @@ export default function LeaderboardScreen() {
             </div>
           ))}
         </div>
-        <div className="disclaimer" style={{ marginTop: 14 }}>랭킹은 프로토타입 예시 · 내 순위는 보유 페이북머니 기준</div>
+        <div className="disclaimer" style={{ marginTop: 14 }}>랭킹은 프로토타입 예시 · 내 순위는 보유 페이북겜머니 기준</div>
       </div>
 
       <div className="actionbar">
         <div className="row">
           <button className="btn btn-surface g1" onClick={s.goHome}>처음으로</button>
-          <button className="btn btn-red grow14" onClick={s.nextRound} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '페이북머니 쌓기 ▶'}</button>
+          <button className="btn btn-red grow14" onClick={s.nextRound} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '페이북겜머니 쌓기 ▶'}</button>
         </div>
         <div className="home-ind"><i /></div>
       </div>

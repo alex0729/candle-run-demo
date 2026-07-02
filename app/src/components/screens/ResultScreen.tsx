@@ -13,7 +13,7 @@ export default function ResultScreen() {
 
   const revealGame = useMemo(() => ({ ...g, visible: g.start + g.budgetMax }), [g])
   const r = g.noTrade ? 0 : g.myRet ?? 0
-  const won = 10_000_000 * r
+  const won = s.walletDelta // 이번 판 손익(₩) = 투자금 100% × 수익률
   const c0 = r > 0 ? 'gain' : r < 0 ? 'loss' : 'flat'
   const review = generateReview(g)
   const profile = diagnose(s.session)
@@ -42,9 +42,8 @@ export default function ResultScreen() {
         <div className="res-top">
           <div className="res-kicker">{g.noTrade ? '노 트레이드 · 복기' : '청산 완료 · 복기'} · {verdictOf(g)}</div>
           <div className={cls('res-big', c0)}>{g.noTrade ? '0.0%' : pct(r)}</div>
-          <div className="res-sub">손익 <b>{won >= 0 ? '+' : ''}₩{fmt(won)}</b> · 가상시드 1,000만원</div>
-          <div className="reward-pill">₩ 페이북머니 <b>+{fmt(s.walletDelta)}</b> 적립</div>
-          <div className="rank-hint">보유 ₩{fmt(s.wallet)} · 주간 <b>{myRank('weekly', s.wallet)}위</b></div>
+          <div className="res-sub">{g.noTrade ? '관망 · 손익 없음' : <>이번 판 수익 <b style={{ color: won > 0 ? 'var(--up)' : won < 0 ? 'var(--down)' : 'var(--text)' }}>{won >= 0 ? '+' : ''}₩{fmt(won)}</b></>}</div>
+          <div className="reward-pill">페이북겜머니 <b>₩{fmt(s.wallet)}</b> · 주간 {myRank('weekly', s.wallet)}위</div>
         </div>
 
         <div className="card blk" style={{ padding: 8 }}>
@@ -86,8 +85,8 @@ export default function ResultScreen() {
         </div>
 
         <button className="cta-invest" onClick={goInvest}>{profile.cta} →</button>
-        <button className="btn btn-surface" style={{ width: '100%', marginBottom: 8 }} onClick={s.goLeaderboard}>🏆 페이북머니 랭킹 확인하기</button>
-        <div className="disclaimer">학습용 복기이며 특정 종목 추천이 아닙니다. 벤치마크는 추정치, 가상 머니로 진행됩니다.</div>
+        <button className="btn btn-surface" style={{ width: '100%', marginBottom: 8 }} onClick={s.goLeaderboard}>🏆 페이북겜머니 랭킹 확인하기</button>
+        <div className="disclaimer">학습용 복기이며 특정 종목 추천이 아닙니다. 벤치마크는 추정치이며, 페이북겜머니(가상)로 진행됩니다.</div>
       </div>
 
       <div className="actionbar">

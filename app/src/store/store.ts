@@ -62,9 +62,10 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined
 function settle(state: StoreState, g: GameState) {
   computeResult(g)
   const r = g.noTrade ? 0 : g.myRet ?? 0
-  // 페이북머니 = 누적 점수(항상 ≥0): 참여 300 + 성과(수익률%×120), 관망 200
-  const delta = g.noTrade ? 200 : Math.max(0, Math.round(r * 100 * 120 + 300))
-  const wallet = state.wallet + delta
+  // 페이북겜머니(게임머니)를 매 판 100% 투자 → 손익이 누적 반영(복리). 관망은 손익 0.
+  const before = state.wallet
+  const delta = g.noTrade ? 0 : Math.round(before * r)
+  const wallet = Math.max(0, before + delta)
 
   const acc = (base: SessionStats): SessionStats => {
     const traded = !g.noTrade && !!g.pos
@@ -94,7 +95,7 @@ function captureRatio(g: GameState): number {
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
-      wallet: 10_000,
+      wallet: 1_000_000,
       lifetime: { ...emptyStats },
       ready: false,
       loadError: null,
@@ -185,7 +186,7 @@ export const useStore = create<StoreState>()(
       },
     }),
     {
-      name: 'candlerun-v0.4',
+      name: 'candlerun-v0.9',
       partialize: (s) => ({ wallet: s.wallet, lifetime: s.lifetime }),
     },
   ),

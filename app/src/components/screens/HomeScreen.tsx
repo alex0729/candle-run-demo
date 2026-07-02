@@ -31,7 +31,7 @@ export default function HomeScreen() {
         <div style={{ padding: '4px 0 22px' }}>
           <span className="eyebrow"><span className="dot" />REAL CHART SIMULATION</span>
           <h1 className="hero-title">과거 차트로<br /><span className="hl">매매 타이밍</span> 테스트</h1>
-          <p className="hero-sub">차트·지표만으로 판단 · 페이북머니 획득</p>
+          <p className="hero-sub">100만원으로 시작 · 차트로 판단 · 페이북겜머니 불리기</p>
         </div>
 
         <div className="mini-chart">

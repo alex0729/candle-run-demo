@@ -46,6 +46,8 @@ jobs:
           cp -r app/dist/data app/dist/legacy/v0.5/data
           cp -r legacy/v0.6 app/dist/legacy/v0.6
           cp -r app/dist/data app/dist/legacy/v0.6/data
+          cp -r legacy/v0.8 app/dist/legacy/v0.8
+          cp -r app/dist/data app/dist/legacy/v0.8/data
 
       - uses: actions/configure-pages@v5
 

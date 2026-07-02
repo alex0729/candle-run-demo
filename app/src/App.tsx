@@ -24,7 +24,7 @@ export default function App() {
         </div>
         <div className="wallet">
           <span className="wallet-coin">₩</span>
-          <div className="wallet-meta"><span>페이북머니</span><span className="wallet-amt">{fmt(s.wallet)}</span></div>
+          <div className="wallet-meta"><span>페이북겜머니</span><span className="wallet-amt">{fmt(s.wallet)}</span></div>
         </div>
       </header>
 

@@ -1,24 +1,25 @@
 // 랭킹 데이터 소스(프로토타입 mock). 추후 서버 fetch로 교체 가능하도록 순수 함수로 분리.
-// 일간 = 오늘 획득 페이북겜머니(손익 합, 원) / 월간 = 이번달 방문횟수(회)
+// 일간 = 현재 사이클 페이북겜머니 잔액(100만 시작, 손익 누적) / 월간 = 이번달 방문횟수(회)
+// 매 사이클(저녁 6시) 마감 시 겜머니 상위 3인이 페이북머니 3·2·1만원 입상.
 
 export interface RankEntry { name: string; tag?: string; score: number }
 
 const DAILY_MOCK: RankEntry[] = [
-  { name: '차트도사', tag: '서울', score: 384000 },
-  { name: '불꽃매매', tag: '부산', score: 331000 },
-  { name: '캔들킬러', score: 296000 },
-  { name: '오늘의고수', tag: '대전', score: 258000 },
-  { name: '골든크로스', score: 221000 },
-  { name: '단타왕', tag: '대구', score: 194000 },
-  { name: '눌림목장인', score: 167000 },
-  { name: '수급의신', tag: '인천', score: 142000 },
-  { name: '역발상투자', score: 118000 },
-  { name: '분할매수', score: 96000 },
-  { name: '리스크관리', score: 77000 },
-  { name: '우상향believer', score: 61000 },
-  { name: '캔들초보', score: 46000 },
-  { name: '존버는승리', score: 33000 },
-  { name: '관망의미학', score: 21000 },
+  { name: '차트도사', tag: '서울', score: 1_486_000 },
+  { name: '불꽃매매', tag: '부산', score: 1_412_000 },
+  { name: '캔들킬러', score: 1_357_000 },
+  { name: '오늘의고수', tag: '대전', score: 1_298_000 },
+  { name: '골든크로스', score: 1_244_000 },
+  { name: '단타왕', tag: '대구', score: 1_193_000 },
+  { name: '눌림목장인', score: 1_151_000 },
+  { name: '수급의신', tag: '인천', score: 1_108_000 },
+  { name: '역발상투자', score: 1_067_000 },
+  { name: '분할매수', score: 1_031_000 },
+  { name: '리스크관리', score: 998_000 },
+  { name: '우상향believer', score: 961_000 },
+  { name: '캔들초보', score: 924_000 },
+  { name: '존버는승리', score: 883_000 },
+  { name: '관망의미학', score: 842_000 },
 ]
 
 const MONTHLY_VISIT_MOCK: RankEntry[] = [

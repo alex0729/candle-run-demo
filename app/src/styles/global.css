@@ -196,6 +196,14 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .lb-me .mid .n { font-size: 16px; font-weight: 800; }
 .lb-me .mid .s { font-size: 12px; opacity: .85; margin-top: 2px; }
 .lb-me .ret { font-size: 20px; font-weight: 800; }
+.lb-me.win { background: linear-gradient(135deg, #f0a500, #fb2c36); }
+/* 상금 안내 스트립 */
+.prize-strip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+  background: linear-gradient(135deg, rgba(240,165,0,.14), rgba(251,44,54,.10)); border: 1px solid rgba(240,165,0,.32);
+  border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; font-weight: 800; color: #b45309; }
+.prize-strip em { flex-basis: 100%; text-align: center; font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--dim); }
+.prize-tag { font-family: var(--fm); font-variant-numeric: tabular-nums; font-size: 10.5px; font-weight: 800; color: #b45309;
+  background: rgba(240,165,0,.16); border-radius: 999px; padding: 2px 7px; margin-left: 7px; }
 .lb-list { display: flex; flex-direction: column; }
 .lb-row { display: flex; align-items: center; gap: 13px; padding: 14px 6px; border-bottom: 1px solid var(--border); }
 .lb-row:last-child { border-bottom: none; }
@@ -247,17 +255,24 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 
 /* ===== Retention (daily / streak / timer) ===== */
 .streak-chip { display: inline-block; margin-top: 12px; font-size: 12.5px; font-weight: 800; color: #b45309; background: rgba(245, 158, 11, .14); border: 1px solid rgba(245, 158, 11, .3); border-radius: 999px; padding: 6px 13px; }
-.midnight-timer { font-family: var(--fm); font-variant-numeric: tabular-nums; }
-.midnight-timer b { font-weight: 800; }
+.cycle-timer { font-family: var(--fm); font-variant-numeric: tabular-nums; }
+.cycle-timer b { font-weight: 800; }
 .daily-card { padding: 18px; text-align: center; background: linear-gradient(160deg, #fff, #fff6f6); border-color: rgba(251, 44, 54, .16); }
 .daily-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .daily-t { font-size: 15px; font-weight: 800; }
 .daily-badge { font-size: 10.5px; font-weight: 700; color: var(--up); background: var(--up-soft); border-radius: 999px; padding: 4px 10px; }
-.daily-count { font-size: 30px; font-weight: 800; }
+/* 현재 사이클 겜머니(=점수) */
+.daily-score { display: flex; flex-direction: column; align-items: center; gap: 3px; margin-bottom: 12px; }
+.daily-score .ds-lbl { font-size: 11.5px; color: var(--dim); font-weight: 700; letter-spacing: .01em; }
+.daily-score .ds-amt { font-family: var(--fm); font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 800; letter-spacing: -.015em; line-height: 1.05; }
+.daily-score .ds-rank { margin-top: 3px; font-size: 11px; font-weight: 800; color: var(--up); background: var(--up-soft); border-radius: 999px; padding: 3px 10px; }
+.daily-count { font-size: 22px; font-weight: 800; }
 .daily-count b { color: var(--up); }
-.daily-done { font-size: 17px; font-weight: 800; }
+.daily-done { font-size: 15px; font-weight: 800; }
 .daily-timer { font-size: 12px; color: var(--dim); margin: 6px 0 14px; }
 .daily-cta { width: 100%; }
+.daily-cta:disabled { opacity: .55; }
+.daily-prize { margin-top: 11px; font-size: 11.5px; font-weight: 700; color: #b45309; }
 .home-meta { text-align: center; font-size: 11.5px; color: var(--faint); margin-top: 6px; }
 .mini-tag { font-style: normal; font-size: 9.5px; font-weight: 700; color: var(--faint); margin-left: 6px; }
 .sheet-note { text-align: center; font-size: 11px; color: var(--faint); margin-top: 10px; }

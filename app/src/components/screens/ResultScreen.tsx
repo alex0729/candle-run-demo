@@ -5,7 +5,7 @@ import Confetti from '../Confetti'
 import { generateReview, verdictOf } from '../../game/engine'
 import { diagnose } from '../../game/profile'
 import { getDailyRanking, rankOf } from '../../game/ranking'
-import { INVEST_LINK, DAILY_FREE_PLAYS, dayKey } from '../../game/constants'
+import { INVEST_LINK, DAILY_FREE_PLAYS, PRIZES, cycleKey } from '../../game/constants'
 import { cls, fmt, pct } from '../../util'
 
 export default function ResultScreen() {
@@ -34,8 +34,9 @@ export default function ResultScreen() {
   const sd = g.scenario.data[g.start]?.date || g.scenario.start_date || ''
   const ed = g.scenario.data[Math.min(g.start + g.budgetMax, g.scenario.data.length - 1)]?.date || g.scenario.end_date || ''
   const period = sd && ed ? `${sd}~${ed}` : ''
-  const dailyRank = rankOf(getDailyRanking(dayKey()), s.dailyScore)
+  const dailyRank = rankOf(getDailyRanking(cycleKey()), s.wallet)
   const dailyLeft = Math.max(0, DAILY_FREE_PLAYS - s.dailyDoneCount)
+  const myPrize = dailyRank >= 1 && dailyRank <= PRIZES.length ? PRIZES[dailyRank - 1] : 0
 
   return (
     <div className="screen">
@@ -45,7 +46,7 @@ export default function ResultScreen() {
           <div className="res-kicker">복기 · {verdictOf(g)}</div>
           <div className={cls('res-big', c0)}>{g.noTrade ? '0.0%' : pct(r)}</div>
           <div className="res-sub">{g.noTrade ? '관망 · 손익 없음' : <>이번 판 수익 <b style={{ color: won > 0 ? 'var(--up)' : won < 0 ? 'var(--down)' : 'var(--text)' }}>{won >= 0 ? '+' : ''}₩{fmt(won)}</b></>}</div>
-          <div className="reward-pill">페이북겜머니 <b>₩{fmt(s.wallet)}</b>{s.roundRanked && <> · 오늘 {dailyRank}위</>}</div>
+          <div className="reward-pill">페이북겜머니 <b>₩{fmt(s.wallet)}</b> · 오늘 {dailyRank}위{myPrize > 0 && <> · 🏆 페이북머니 {fmt(myPrize)}원</>}</div>
         </div>
 
         {/* 정답 공개(reveal) */}

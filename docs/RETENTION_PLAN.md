@@ -9,11 +9,11 @@
 리텐션 루프를 **경쟁형 일일 토너먼트**로 재편. 매일 동일 시드머니로 겨루고, 결산·입상으로 재방문 동기를 강화한다.
 
 - **매일 100만원 시작 / 겜머니 누적 = 점수**: 매 사이클 시작 시 페이북겜머니를 `START_MONEY(100만)`으로 리셋. 손익이 겜머니에 누적되며 그 **잔액이 곧 일간 랭킹 점수**(§C의 "손익 합"에서 변경). `store.wallet`이 사이클 점수를 겸함.
-- **일일 사이클(19시 개장 → 다음날 18시 마감)**: `constants.ts`의 `cycleKey / cyclePhase / msToCycleClose / msToCycleOpen`로 정의. 18~19시는 `settlement`(결산·입상 발표) 구간 → `startDaily`에서 플레이 잠금. 개장(19시)에 `rollover`가 겜머니·판수 리셋.
+- **일일 사이클(새벽 7시 개장 → 다음날 새벽 6시 마감)**: `constants.ts`의 `cycleKey / cyclePhase / msToCycleClose / msToCycleOpen`로 정의. 6~7시는 `settlement`(결산·입상 발표) 구간 → `startDaily`에서 플레이 잠금. 개장(새벽 7시)에 `rollover`가 겜머니·판수 리셋. (마감 시각은 `CYCLE_CLOSE_HOUR` 상수로 조정 가능)
 - **입상 보상**: `PRIZES = [30000, 20000, 10000]` — 겜머니 1·2·3등에게 페이북머니 3·2·1만원(프로토 표기). 랭킹/결과 화면에 상금 뱃지.
 - **하루 2판 + 광고 이어하기 유지**: 무료 2판 후 "광고 보고 한 판 더"(본게임, 점수 누적). 모든 판이 랭킹 반영.
 - **기본값 초보자·30턴**: `defaultSettings.difficulty='beginner'`, `mode=30`.
-- **타이머 재편**: 자정(`msToMidnight`) → 사이클(18시 마감/19시 개장) 기준 `CycleTimer`로 교체. `MidnightTimer` 제거.
+- **타이머 재편**: 자정(`msToMidnight`) → 사이클(새벽 6시 마감/7시 개장) 기준 `CycleTimer`로 교체. `MidnightTimer` 제거.
 - 영속 키 갱신(`candlerun-v0.13`): `dailyDate/dailyScore/lastPlayDay` 제거, `cycleKey/lastPlayCycle` 추가. 연속 출석(streak)은 사이클 기준.
 
 > §1~§5는 v0.11 원안 기록. §2-D는 v0.12, §C의 점수 정의·타이머·랭킹은 위 v0.13 갱신으로 대체됨.

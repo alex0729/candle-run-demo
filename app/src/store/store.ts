@@ -19,7 +19,7 @@ interface Persisted {
   lifetime: SessionStats
   streak: number
   lastPlayCycle: string    // 마지막으로 플레이한 사이클 키(연속 출석 판정)
-  cycleKey: string         // wallet이 속한 사이클(19시 개장 기준)
+  cycleKey: string         // wallet이 속한 사이클(새벽 7시 개장 기준)
   dailyDoneCount: number   // 이번 사이클 진행한 판 수(무료 2 + 광고 추가)
   monthStr: string
   monthlyVisits: number
@@ -120,10 +120,10 @@ export const useStore = create<StoreState>()(
       setSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
       toggleInd: (k) => set((s) => ({ settings: { ...s.settings, ind: { ...s.settings.ind, [k]: !s.settings.ind[k] } } })),
 
-      // 오늘의 종목: 무료 2판 → 이후는 광고 시청 후 본게임 1판. 18~19시 결산 시간엔 잠금.
+      // 오늘의 종목: 무료 2판 → 이후는 광고 시청 후 본게임 1판. 6~7시 결산 시간엔 잠금.
       startDaily: async () => {
         rollover(set, get)
-        if (cyclePhase() === 'settlement') { get().showToast('지금은 결산 시간이에요 · 저녁 7시에 새 라운드가 열려요'); return }
+        if (cyclePhase() === 'settlement') { get().showToast('지금은 결산 시간이에요 · 새벽 7시에 새 라운드가 열려요'); return }
         if (!Object.values(get().settings.ind).some(Boolean)) { get().showToast('지표를 최소 1개 선택하세요'); return }
         if (get().dailyDoneCount < DAILY_FREE_PLAYS) await get().beginPlay()
         else set({ adOpen: true, showSettings: false })
@@ -215,7 +215,7 @@ function rollover(set: SetFn, get: GetFn) {
   const s = get()
   const ck = cycleKey(), mk = monthKey()
   const patch: Partial<StoreState> = {}
-  // 새 사이클 개장(19시) → 겜머니 100만으로 리셋, 판수 초기화
+  // 새 사이클 개장(새벽 7시) → 겜머니 100만으로 리셋, 판수 초기화
   if (s.cycleKey !== ck) { patch.cycleKey = ck; patch.wallet = START_MONEY; patch.dailyDoneCount = 0 }
   if (s.monthStr !== mk) { patch.monthStr = mk; patch.monthlyVisits = 0 }
   if (Object.keys(patch).length) set(patch)

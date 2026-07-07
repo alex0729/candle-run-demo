@@ -33,7 +33,7 @@ export default function HomeScreen() {
       <button className="home-gear" onClick={s.openSettings} aria-label="게임 설정">⚙</button>
       <div className="scroll" style={{ paddingBottom: 8 }}>
         <div style={{ padding: '4px 0 16px' }}>
-          <span className="eyebrow"><span className="dot" />DAILY CANDLE · 저녁 6시 결산</span>
+          <span className="eyebrow"><span className="dot" />DAILY CANDLE · 새벽 6시 결산</span>
           <h1 className="hero-title">오늘의 차트<br /><span className="hl">한 판</span>으로 감 잡기</h1>
           {s.streak > 0 && <div className="streak-chip">🔥 {s.streak}일 연속 출석</div>}
         </div>

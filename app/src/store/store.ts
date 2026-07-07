@@ -8,18 +8,19 @@ import {
 import { fetchScenario, loadManifest } from '../game/scenarios'
 import { emptyStats, SessionStats } from '../game/profile'
 import { getDailyScenarioIds } from '../game/daily'
-import { DAILY_FREE_PLAYS, dayKey, monthKey, yesterdayKey } from '../game/constants'
+import {
+  DAILY_FREE_PLAYS, START_MONEY, cycleKey, prevCycleKey, cyclePhase, monthKey,
+} from '../game/constants'
 
 export type Screen = 'setup' | 'play' | 'result' | 'leaderboard'
 
 interface Persisted {
-  wallet: number
+  wallet: number           // 현재 사이클 페이북겜머니(=일간 랭킹 점수). 매 사이클 100만으로 리셋
   lifetime: SessionStats
   streak: number
-  lastPlayDay: string
-  dailyDate: string
-  dailyDoneCount: number   // 오늘 진행한 판 수(무료 2 + 광고 추가)
-  dailyScore: number       // 오늘 획득 페이북겜머니(손익 합) = 일간 랭킹 점수
+  lastPlayCycle: string    // 마지막으로 플레이한 사이클 키(연속 출석 판정)
+  cycleKey: string         // wallet이 속한 사이클(19시 개장 기준)
+  dailyDoneCount: number   // 이번 사이클 진행한 판 수(무료 2 + 광고 추가)
   monthStr: string
   monthlyVisits: number
 }
@@ -64,7 +65,7 @@ interface StoreState extends Persisted {
 }
 
 const defaultSettings: Settings = {
-  difficulty: 'normal', market: 'ALL', mode: 30, recentOnly: false,
+  difficulty: 'beginner', market: 'ALL', mode: 30, recentOnly: false,
   ind: { ma: true, rsi: true, macd: true, vol: true, bb: false, ichimoku: false },
 }
 
@@ -101,9 +102,9 @@ function captureRatio(g: GameState): number {
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
-      wallet: 1_000_000,
+      wallet: START_MONEY,
       lifetime: { ...emptyStats },
-      streak: 0, lastPlayDay: '', dailyDate: '', dailyDoneCount: 0, dailyScore: 0, monthStr: '', monthlyVisits: 0,
+      streak: 0, lastPlayCycle: '', cycleKey: '', dailyDoneCount: 0, monthStr: '', monthlyVisits: 0,
       ready: false, loadError: null, loadingRound: false,
       screen: 'setup', settings: { ...defaultSettings },
       game: null, session: { ...emptyStats },
@@ -111,6 +112,7 @@ export const useStore = create<StoreState>()(
       toast: null, tip: null, tipOpen: false, showSettings: false, adOpen: false, roundRanked: true,
 
       init: async () => {
+        rollover(set, get) // 로드 시점의 사이클로 정렬(지난 사이클이면 겜머니 100만 리셋)
         try { await loadManifest(); set({ ready: true, loadError: null }) }
         catch (e) { set({ loadError: (e as Error).message, ready: false }) }
       },
@@ -118,9 +120,10 @@ export const useStore = create<StoreState>()(
       setSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
       toggleInd: (k) => set((s) => ({ settings: { ...s.settings, ind: { ...s.settings.ind, [k]: !s.settings.ind[k] } } })),
 
-      // 오늘의 종목: 무료 2판 → 이후는 광고 시청 후 본게임 1판
+      // 오늘의 종목: 무료 2판 → 이후는 광고 시청 후 본게임 1판. 18~19시 결산 시간엔 잠금.
       startDaily: async () => {
         rollover(set, get)
+        if (cyclePhase() === 'settlement') { get().showToast('지금은 결산 시간이에요 · 저녁 7시에 새 라운드가 열려요'); return }
         if (!Object.values(get().settings.ind).some(Boolean)) { get().showToast('지표를 최소 1개 선택하세요'); return }
         if (get().dailyDoneCount < DAILY_FREE_PLAYS) await get().beginPlay()
         else set({ adOpen: true, showSettings: false })
@@ -133,7 +136,7 @@ export const useStore = create<StoreState>()(
         set({ loadingRound: true })
         try {
           const m = await loadManifest()
-          const ids = getDailyScenarioIds(dayKey(), m)
+          const ids = getDailyScenarioIds(cycleKey(), m)
           if (!ids.length) throw new Error('no scenarios')
           const startIdx = Math.min(get().dailyDoneCount, ids.length - 1)
           // 삭제/누락(404)된 시나리오는 건너뛰고 다음 종목으로 폴백
@@ -195,11 +198,11 @@ export const useStore = create<StoreState>()(
       },
     }),
     {
-      name: 'candlerun-v0.9',
+      name: 'candlerun-v0.13',
       partialize: (s) => ({
         wallet: s.wallet, lifetime: s.lifetime,
-        streak: s.streak, lastPlayDay: s.lastPlayDay, dailyDate: s.dailyDate, dailyDoneCount: s.dailyDoneCount,
-        dailyScore: s.dailyScore, monthStr: s.monthStr, monthlyVisits: s.monthlyVisits,
+        streak: s.streak, lastPlayCycle: s.lastPlayCycle, cycleKey: s.cycleKey, dailyDoneCount: s.dailyDoneCount,
+        monthStr: s.monthStr, monthlyVisits: s.monthlyVisits,
       }),
     },
   ),
@@ -210,22 +213,23 @@ type GetFn = () => StoreState
 
 function rollover(set: SetFn, get: GetFn) {
   const s = get()
-  const today = dayKey(), mk = monthKey()
+  const ck = cycleKey(), mk = monthKey()
   const patch: Partial<StoreState> = {}
-  if (s.dailyDate !== today) { patch.dailyDate = today; patch.dailyDoneCount = 0; patch.dailyScore = 0 }
+  // 새 사이클 개장(19시) → 겜머니 100만으로 리셋, 판수 초기화
+  if (s.cycleKey !== ck) { patch.cycleKey = ck; patch.wallet = START_MONEY; patch.dailyDoneCount = 0 }
   if (s.monthStr !== mk) { patch.monthStr = mk; patch.monthlyVisits = 0 }
   if (Object.keys(patch).length) set(patch)
 }
 
 function markVisit(set: SetFn, get: GetFn) {
   const s = get()
-  const today = dayKey()
+  const ck = cycleKey()
   let streak = s.streak
   let celebrate = false
-  if (s.lastPlayDay === today) { /* 같은 날 — 유지 */ }
-  else if (s.lastPlayDay === yesterdayKey()) { streak = s.streak + 1; celebrate = true }
+  if (s.lastPlayCycle === ck) { /* 같은 사이클 — 유지 */ }
+  else if (s.lastPlayCycle === prevCycleKey()) { streak = s.streak + 1; celebrate = true }
   else { streak = 1; celebrate = s.streak !== 1 }
-  set({ streak, lastPlayDay: today, monthlyVisits: s.monthlyVisits + 1 })
+  set({ streak, lastPlayCycle: ck, monthlyVisits: s.monthlyVisits + 1 })
   if (celebrate) get().showToast(`🔥 ${streak}일 연속 출석! 내일도 이어가요`)
 }
 
@@ -244,11 +248,10 @@ function finishExit(set: SetFn, get: GetFn, g: GameState) {
   g.over = true
   const s = get()
   const res = settle(s, g)
-  const rankedDelta = s.roundRanked ? res.walletDelta : 0
+  // 손익은 곧바로 사이클 겜머니(=랭킹 점수)에 누적. 사이클 내 모든 판이 랭킹 반영.
   set({
     game: { ...g }, screen: 'result',
     wallet: res.wallet, session: res.session, lifetime: res.lifetime,
     walletDelta: res.walletDelta, lastRet: g.noTrade ? 0 : (g.myRet ?? 0),
-    dailyScore: s.dailyScore + rankedDelta,
   })
 }

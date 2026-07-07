@@ -77,7 +77,8 @@ export default function SettingsSheet() {
           ))}
         </div>
 
-        <button className="sheet-cta" onClick={s.startRound} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '이 설정으로 시작 ▶'}</button>
+        <button className="sheet-cta" onClick={s.startPractice} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '연습 한 판 시작 ▶'}</button>
+        <div className="sheet-note">직접 설정은 연습 판이며 랭킹에 반영되지 않아요</div>
       </div>
     </>
   )

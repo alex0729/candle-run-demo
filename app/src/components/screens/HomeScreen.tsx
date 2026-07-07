@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
-import { useStore, AD_EVERY } from '../../store/store'
+import { useMemo, useEffect, useState } from 'react'
+import { useStore } from '../../store/store'
 import { loadManifest } from '../../game/scenarios'
-import { useEffect, useState } from 'react'
+import { DAILY_FREE_PLAYS } from '../../game/constants'
 import type { Manifest } from '../../game/types'
+import MidnightTimer from '../MidnightTimer'
 
 function genPreview() {
   let p = 100
@@ -20,18 +21,39 @@ export default function HomeScreen() {
   const [m, setM] = useState<Manifest | null>(null)
   useEffect(() => { loadManifest().then(setM).catch(() => {}) }, [])
 
-  const quickStart = () => {
-    s.setSettings({ difficulty: 'normal', mode: 50, market: 'ALL', recentOnly: false, ind: { ma: true, rsi: true, macd: true, vol: true, bb: false, ichimoku: false } })
-    s.startRound()
-  }
+  const remaining = Math.max(0, DAILY_FREE_PLAYS - s.dailyDoneCount)
+  const dailyDone = remaining === 0
 
   return (
     <div className="screen">
       <div className="scroll" style={{ paddingBottom: 8 }}>
-        <div style={{ padding: '4px 0 22px' }}>
-          <span className="eyebrow"><span className="dot" />REAL CHART SIMULATION</span>
-          <h1 className="hero-title">과거 차트로<br /><span className="hl">매매 타이밍</span> 테스트</h1>
-          <p className="hero-sub">100만원으로 시작 · 차트로 판단 · 페이북겜머니 불리기</p>
+        <div style={{ padding: '4px 0 16px' }}>
+          <span className="eyebrow"><span className="dot" />DAILY CANDLE</span>
+          <h1 className="hero-title">오늘의 차트<br /><span className="hl">한 판</span>으로 감 잡기</h1>
+          {s.streak > 0 && <div className="streak-chip">🔥 {s.streak}일 연속 출석</div>}
+        </div>
+
+        {/* 오늘의 종목 카드 */}
+        <div className="card daily-card">
+          <div className="daily-head">
+            <span className="daily-t">오늘의 종목</span>
+            <span className="daily-badge">하루 {DAILY_FREE_PLAYS}판 무료</span>
+          </div>
+          {!dailyDone ? (
+            <>
+              <div className="daily-count"><b>{s.dailyDoneCount}</b> / {DAILY_FREE_PLAYS} 판</div>
+              <div className="daily-timer"><MidnightTimer /></div>
+              <button className="btn btn-red daily-cta" onClick={s.startDaily} disabled={s.loadingRound}>
+                {s.loadingRound ? '불러오는 중…' : '오늘의 종목 시작 ▶'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="daily-done">오늘 완료 🎉 내일 또 만나요</div>
+              <div className="daily-timer"><MidnightTimer prefix="다음 종목까지 " /></div>
+              <button className="btn btn-surface daily-cta" onClick={s.goLeaderboard}>🏆 오늘 내 랭킹 보기</button>
+            </>
+          )}
         </div>
 
         <div className="mini-chart">
@@ -40,28 +62,15 @@ export default function HomeScreen() {
           ))}
         </div>
 
-        <div className="card rec-card">
-          <div className="rec-head">
-            <div className="l"><span className="t">추천 설정</span><span className="badge-best">BEST</span></div>
-            <span className="r">바로 시작</span>
-          </div>
-          <div className="rec-row"><span className="rec-num">1</span>기본 지표 4개 · MA·RSI·MACD·거래량</div>
-          <div className="rec-row"><span className="rec-num">2</span>50봉 · 종목 블라인드 · 매수·공매도</div>
-          <div className="rec-row"><span className="rec-num">3</span>결과에서 판단 근거·복기 제공</div>
-          {m && (
-            <div className="rec-row" style={{ marginTop: 4 }}><span className="rec-num">✦</span>실전 시나리오 {m.count}개 · KOSPI·KOSDAQ</div>
-          )}
-        </div>
+        {m && <div className="home-meta">실전 시나리오 {m.count}개 · KOSPI·KOSDAQ · 종목 블라인드</div>}
       </div>
 
       <div className="actionbar">
-        <div className="col">
-          <div className="free-hint">{s.adCount >= AD_EVERY ? '다음 시작 시 짧은 광고 ▶' : `무료 플레이 ${AD_EVERY - s.adCount}판 남음 · 3판마다 짧은 광고`}</div>
-          <button className="btn btn-red" onClick={quickStart} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '빠른 시작 ▶'}</button>
-          <div className="row">
-            <button className="btn btn-surface g1" onClick={s.openSettings}>직접 설정</button>
-            <button className="btn btn-surface g1" onClick={s.goLeaderboard}>🏆 랭킹</button>
-          </div>
+        <div className="row">
+          {dailyDone
+            ? <button className="btn btn-surface g1" onClick={s.startPractice} disabled={s.loadingRound}>연습 한 판 <i className="mini-tag">랭킹 X</i></button>
+            : <button className="btn btn-surface g1" onClick={s.openSettings}>직접 설정</button>}
+          <button className="btn btn-surface g1" onClick={s.goLeaderboard}>🏆 랭킹</button>
         </div>
         <div className="home-ind"><i /></div>
       </div>

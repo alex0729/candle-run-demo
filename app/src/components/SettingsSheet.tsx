@@ -2,18 +2,12 @@ import { useStore } from '../store/store'
 import { cls } from '../util'
 
 const DIFFS = [
-  { k: 'beginner', label: '초보자' },
-  { k: 'normal', label: '기본' },
-  { k: 'advanced', label: '고급' },
+  { k: 'beginner', label: '초보자', desc: '튜토리얼 · 매턴 팁' },
+  { k: 'normal', label: '기본', desc: '균형' },
+  { k: 'advanced', label: '고급', desc: '팁 최소' },
 ] as const
 
-const MARKETS = [
-  { k: 'ALL', label: '전체' },
-  { k: 'KOSPI', label: 'KOSPI' },
-  { k: 'KOSDAQ', label: 'KOSDAQ' },
-] as const
-
-const MODES = [30, 50, 80]
+const MODES = [20, 30, 50]
 
 const INDS: { k: keyof ReturnType<typeof useStore.getState>['settings']['ind']; name: string; desc: string }[] = [
   { k: 'ma', name: 'MA', desc: '추세' },
@@ -34,34 +28,24 @@ export default function SettingsSheet() {
       <div className="sheet">
         <div className="sheet-handle" />
         <div className="sheet-head">
-          <span className="sheet-title">직접 설정</span>
+          <span className="sheet-title">게임 설정</span>
           <button className="sheet-close" onClick={s.closeSettings}>×</button>
         </div>
 
         <div className="field-label">난이도</div>
         <div className="seg-row">
           {DIFFS.map((d) => (
-            <button key={d.k} className={cls('seg', s.settings.difficulty === d.k && 'on')} onClick={() => s.setSettings({ difficulty: d.k })}>{d.label}</button>
+            <button key={d.k} className={cls('seg', s.settings.difficulty === d.k && 'on')} onClick={() => s.setSettings({ difficulty: d.k })}>
+              <div>{d.label}</div><div className="seg-sub">{d.desc}</div>
+            </button>
           ))}
         </div>
 
-        <div className="field-label">시장</div>
-        <div className="seg-row">
-          {MARKETS.map((m) => (
-            <button key={m.k} className={cls('seg', s.settings.market === m.k && 'on')} onClick={() => s.setSettings({ market: m.k })}>{m.label}</button>
-          ))}
-        </div>
-
-        <div className="field-label">플레이 봉 수</div>
+        <div className="field-label">플레이 봉 수 (턴)</div>
         <div className="seg-row">
           {MODES.map((m) => (
-            <button key={m} className={cls('seg', 'mono', s.settings.mode === m && 'on')} onClick={() => s.setSettings({ mode: m })}>{m}봉</button>
+            <button key={m} className={cls('seg', 'mono', s.settings.mode === m && 'on')} onClick={() => s.setSettings({ mode: m })}>{m}턴</button>
           ))}
-        </div>
-
-        <div className="switch-row">
-          <span className="l">최근(2020년+) 데이터 우선</span>
-          <button className={cls('switch', s.settings.recentOnly && 'on')} onClick={() => s.setSettings({ recentOnly: !s.settings.recentOnly })} aria-pressed={s.settings.recentOnly}><i /></button>
         </div>
 
         <div className="field-label">지표 선택</div>
@@ -77,8 +61,8 @@ export default function SettingsSheet() {
           ))}
         </div>
 
-        <button className="sheet-cta" onClick={s.startPractice} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '연습 한 판 시작 ▶'}</button>
-        <div className="sheet-note">직접 설정은 연습 판이며 랭킹에 반영되지 않아요</div>
+        <button className="sheet-cta" onClick={s.closeSettings}>적용하기</button>
+        <div className="sheet-note">설정은 오늘의 종목에 적용돼요 · 초보자는 튜토리얼과 매턴 팁이 켜집니다</div>
       </div>
     </>
   )

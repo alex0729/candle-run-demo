@@ -24,8 +24,8 @@ export default function AdModal() {
         <div className="ad-badge">리워드 광고 · 프로토타입</div>
         <div className="ad-creative">
           <div className="ad-visual">📺</div>
-          <div className="ad-title">광고 시청 후 이어하기</div>
-          <div className="ad-desc">3판마다 짧은 광고가 표시됩니다<br />리워드 광고 수익 모델</div>
+          <div className="ad-title">광고 보고 한 판 더</div>
+          <div className="ad-desc">오늘 무료 2판을 다 썼어요<br />짧은 광고 시청 후 본게임 1판 이어하기</div>
           <button className="ad-link" onClick={() => s.showToast('데모: 광고 상세 페이지로 이동')}>광고 보러가기 ↗</button>
         </div>
         <div className="ad-progress"><div className="ad-bar" style={{ width: `${pctW}%` }} /></div>

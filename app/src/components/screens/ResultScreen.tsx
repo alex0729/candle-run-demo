@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useStore } from '../../store/store'
 import Chart from '../Chart'
+import Confetti from '../Confetti'
 import { generateReview, verdictOf } from '../../game/engine'
 import { diagnose } from '../../game/profile'
 import { getDailyRanking, rankOf } from '../../game/ranking'
@@ -38,6 +39,7 @@ export default function ResultScreen() {
 
   return (
     <div className="screen">
+      {r > 0 && <Confetti />}
       <div className="scroll">
         <div className="res-top">
           <div className="res-kicker">복기 · {verdictOf(g)}</div>
@@ -99,7 +101,7 @@ export default function ResultScreen() {
           <button className="btn btn-surface g1" onClick={s.goLeaderboard}>🏆 랭킹</button>
           {dailyLeft > 0
             ? <button className="btn btn-red grow14" onClick={s.startDaily} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : `오늘의 종목 다음 판 ▶`}</button>
-            : <button className="btn btn-red grow14" onClick={s.goHome} disabled={s.loadingRound}>내일 다시 오기 ✨</button>}
+            : <button className="btn btn-dark grow14" onClick={s.startDaily} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '🎬 광고 보고 한 판 더'}</button>}
         </div>
         <div className="home-ind"><i /></div>
       </div>

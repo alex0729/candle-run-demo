@@ -1,9 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../../store/store'
 import Chart from '../Chart'
-import { curPrice, pnlNow, signalAt } from '../../game/engine'
+import PlayTutorial from '../PlayTutorial'
+import { curPrice, GameState, pnlNow, signalAt } from '../../game/engine'
 import { cls, fmt, pct } from '../../util'
 import type { Score } from '../../game/signal'
+
+// 초보자 매턴 팁(짧은 가이드)
+function turnHint(g: GameState): string {
+  const sig = signalAt(g)
+  if (!g.pos) {
+    if (sig.score >= 2) return '상승 우위 신호 — 매수를 고려해볼 수 있어요'
+    if (sig.score <= -2) return '하락 주의 — 다음턴으로 넘기는 게 안전할 수 있어요'
+    return '방향이 애매해요 — 한 봉 더 지켜봐요'
+  }
+  const p = pnlNow(g)
+  if (p > 0 && sig.score <= 0) return '수익 중 신호 약화 — 청산도 고려해봐요'
+  if (p < 0 && sig.score <= -2) return '손실 + 약세 — 손절 기준을 생각해봐요'
+  return '보유 중 — 추세가 살아있는지 확인해요'
+}
 
 function indState(sc: Score, kind: 'ma' | 'rsi' | 'macd' | 'vol') {
   const col = sc.score > 0 ? 'var(--up)' : sc.score < 0 ? 'var(--down)' : 'var(--dim)'
@@ -18,6 +33,23 @@ export default function PlayScreen() {
   const s = useStore()
   const g = s.game
   const [info, setInfo] = useState<null | 'long' | 'short'>(null)
+  const beginner = s.settings.difficulty === 'beginner'
+  const [tutClosed, setTutClosed] = useState(false)
+  const [turnTip, setTurnTip] = useState<string | null>(null)
+
+  const scnId = g?.scenario.id
+  const visible = g?.visible
+  const over = g?.over
+  useEffect(() => { setTutClosed(false) }, [scnId]) // 새 게임마다 튜토리얼 초기화
+
+  useEffect(() => {
+    if (!beginner || !g || over) { setTurnTip(null); return }
+    setTurnTip(turnHint(g))
+    const t = setTimeout(() => setTurnTip(null), 2000)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, over, beginner])
+
   if (!g) return null
 
   const sig = signalAt(g)
@@ -66,6 +98,7 @@ export default function PlayScreen() {
               <div key={c.k} className="ind-chip"><span className="k">{c.k}</span><span className="v" style={{ color: c.col }}>{c.v}</span></div>
             ))}
           </div>
+          {turnTip && <div className="turn-tip" key={g.visible}>💡 {turnTip}</div>}
         </div>
       </div>
 
@@ -111,6 +144,7 @@ export default function PlayScreen() {
         )}
         <div className="home-ind"><i /></div>
       </div>
+      {beginner && !tutClosed && <PlayTutorial onDone={() => setTutClosed(true)} />}
     </div>
   )
 }

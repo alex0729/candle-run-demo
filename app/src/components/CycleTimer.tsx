@@ -8,7 +8,7 @@ function hms(ms: number): string {
   return `${p(h)}:${p(m)}:${p(s)}`
 }
 
-// 사이클(19시 개장 → 18시 마감) 카운트다운. 결산(18~19시) 중엔 개장까지, 아니면 마감까지.
+// 사이클(새벽 7시 개장 → 새벽 6시 마감) 카운트다운. 결산(6~7시) 중엔 개장까지, 아니면 마감까지.
 export default function CycleTimer({ prefix }: { prefix?: string }) {
   const [, tick] = useState(0)
   useEffect(() => {

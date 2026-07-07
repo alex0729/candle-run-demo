@@ -41,7 +41,7 @@ export default function LeaderboardScreen() {
         {daily && (
           <div className="prize-strip">
             <span>🥇 3만</span><span>🥈 2만</span><span>🥉 1만</span>
-            <em>저녁 6시 겜머니 상위 3인 페이북머니 지급</em>
+            <em>새벽 6시 겜머니 상위 3인 페이북머니 지급</em>
           </div>
         )}
 

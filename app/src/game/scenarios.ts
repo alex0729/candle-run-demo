@@ -7,7 +7,9 @@ const scenarioCache = new Map<string, Scenario>()
 
 export async function loadManifest(): Promise<Manifest> {
   if (manifestCache) return manifestCache
-  const res = await fetch(`${DATA_BASE}/manifest.json`, { cache: 'force-cache' })
+  // manifest.json은 URL이 고정이라 force-cache 시 배포 후에도 옛 목록(삭제된 종목 포함)을
+  // 계속 쓰게 됨 → 반드시 재검증(no-cache)해서 최신 목록을 받는다.
+  const res = await fetch(`${DATA_BASE}/manifest.json`, { cache: 'no-cache' })
   if (!res.ok) throw new Error('manifest load failed: ' + res.status)
   manifestCache = (await res.json()) as Manifest
   return manifestCache

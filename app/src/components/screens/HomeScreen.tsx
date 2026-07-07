@@ -21,11 +21,11 @@ export default function HomeScreen() {
   const [m, setM] = useState<Manifest | null>(null)
   useEffect(() => { loadManifest().then(setM).catch(() => {}) }, [])
 
-  const remaining = Math.max(0, DAILY_FREE_PLAYS - s.dailyDoneCount)
-  const dailyDone = remaining === 0
+  const free = s.dailyDoneCount < DAILY_FREE_PLAYS
 
   return (
     <div className="screen">
+      <button className="home-gear" onClick={s.openSettings} aria-label="게임 설정">⚙</button>
       <div className="scroll" style={{ paddingBottom: 8 }}>
         <div style={{ padding: '4px 0 16px' }}>
           <span className="eyebrow"><span className="dot" />DAILY CANDLE</span>
@@ -33,13 +33,12 @@ export default function HomeScreen() {
           {s.streak > 0 && <div className="streak-chip">🔥 {s.streak}일 연속 출석</div>}
         </div>
 
-        {/* 오늘의 종목 카드 */}
         <div className="card daily-card">
           <div className="daily-head">
             <span className="daily-t">오늘의 종목</span>
             <span className="daily-badge">하루 {DAILY_FREE_PLAYS}판 무료</span>
           </div>
-          {!dailyDone ? (
+          {free ? (
             <>
               <div className="daily-count"><b>{s.dailyDoneCount}</b> / {DAILY_FREE_PLAYS} 판</div>
               <div className="daily-timer"><MidnightTimer /></div>
@@ -49,9 +48,11 @@ export default function HomeScreen() {
             </>
           ) : (
             <>
-              <div className="daily-done">오늘 완료 🎉 내일 또 만나요</div>
-              <div className="daily-timer"><MidnightTimer prefix="다음 종목까지 " /></div>
-              <button className="btn btn-surface daily-cta" onClick={s.goLeaderboard}>🏆 오늘 내 랭킹 보기</button>
+              <div className="daily-done">오늘 무료 2판 완료 🎉</div>
+              <div className="daily-timer">광고 시청 시 본게임 1판 더 · <MidnightTimer prefix="무료 리셋 " /></div>
+              <button className="btn btn-dark daily-cta" onClick={s.startDaily} disabled={s.loadingRound}>
+                {s.loadingRound ? '불러오는 중…' : '🎬 광고 보고 한 판 더'}
+              </button>
             </>
           )}
         </div>
@@ -62,15 +63,12 @@ export default function HomeScreen() {
           ))}
         </div>
 
-        {m && <div className="home-meta">실전 시나리오 {m.count}개 · KOSPI·KOSDAQ · 종목 블라인드</div>}
+        {m && <div className="home-meta">일반 단일종목 {m.by_source?.real ?? ''} · 블라인드 · ETF/ETN 제외</div>}
       </div>
 
       <div className="actionbar">
         <div className="row">
-          {dailyDone
-            ? <button className="btn btn-surface g1" onClick={s.startPractice} disabled={s.loadingRound}>연습 한 판 <i className="mini-tag">랭킹 X</i></button>
-            : <button className="btn btn-surface g1" onClick={s.openSettings}>직접 설정</button>}
-          <button className="btn btn-surface g1" onClick={s.goLeaderboard}>🏆 랭킹</button>
+          <button className="btn btn-surface g1" onClick={s.goLeaderboard}>🏆 오늘의 랭킹</button>
         </div>
         <div className="home-ind"><i /></div>
       </div>

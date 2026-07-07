@@ -40,10 +40,16 @@ def write_scn(obj):
 manifest_items = []
 
 # ---------- 1) real KOSPI scenarios from prototype ----------
+# ETF/ETN/레버리지/인버스/선물 등 파생·지수형 상품은 제외(일반 단일종목만)
+ETF_PAT = re.compile(r'ETF|ETN|레버리지|인버스|선물|커버드콜|TDF|액티브|KODEX|TIGER|KBSTAR|ARIRANG|KINDEX|KOSEF|KIWOOM|HANARO|TIMEFOLIO|블룸버그|KoAct|\(합성|\bACE\b|\bSOL\b|\bRISE\b')
 html = open(os.path.join(ROOT,'legacy','index-v0.3.html'), encoding='utf-8').read()
 m = re.search(r'<script id="embeddedScenarios"[^>]*>(.*?)</script>', html, re.S)
 real = json.loads(m.group(1))['scenarios']
+excluded_etf = 0
 for s in real:
+    if ETF_PAT.search(s.get('name') or ''):
+        excluded_etf += 1
+        continue
     data = [{'date':d['date'],'o':int(d['o']),'h':int(d['h']),'l':int(d['l']),'c':int(d['c']),'v':int(d.get('v',0))} for d in s['data']]
     start = int(s.get('start_index',120))
     pat, diff = classify(data, start)
@@ -61,7 +67,7 @@ for s in real:
     write_scn(obj)
     manifest_items.append({k:obj[k] for k in ('id','market','sector','source','blind_label','warmup','play_max','start_date','end_date','pattern','difficulty','recent')})
 
-print('real scenarios:', len(real))
+print('real scenarios(kept):', len(real)-excluded_etf, '| ETF/ETN 제외:', excluded_etf)
 
 # ---------- 2) synthetic KOSPI/KOSDAQ scenarios (2020+) ----------
 SECTORS = {

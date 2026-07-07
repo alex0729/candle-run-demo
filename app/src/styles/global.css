@@ -301,3 +301,60 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .ad-cta:disabled { background: var(--surface2); color: var(--dim); box-shadow: none; }
 .ad-cta:not(:disabled):active { transform: scale(.97); }
 .ad-note { font-size: 10px; color: var(--faint); margin-top: 12px; line-height: 1.5; }
+
+/* ===== v0.12 ===== */
+/* 설정 기어 아이콘 (메인 우측 상단) */
+.home-gear { position: absolute; top: 6px; right: 16px; z-index: 12; width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center; font-size: 20px; line-height: 1; color: var(--dim);
+  background: var(--surface2); border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: transform .18s, color .18s; }
+.home-gear:active { transform: rotate(35deg) scale(.94); color: var(--up); }
+
+/* 난이도 세그먼트 보조 설명 */
+.seg-sub { font-size: 10.5px; font-weight: 700; color: var(--faint); margin-top: 3px; }
+.seg.on .seg-sub { color: var(--up); opacity: .8; }
+
+/* 매턴 팁 (2초 노출 후 사라짐, 초보자) */
+.turn-tip { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 8;
+  max-width: 92%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 12.5px; font-weight: 800; color: #fff; background: rgba(19, 22, 29, .92);
+  padding: 9px 15px; border-radius: 999px; box-shadow: 0 8px 22px rgba(0, 0, 0, .25);
+  animation: tipInOut 2s ease forwards; pointer-events: none; }
+@keyframes tipInOut {
+  0% { opacity: 0; transform: translate(-50%, 10px); }
+  12% { opacity: 1; transform: translate(-50%, 0); }
+  82% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -6px); }
+}
+
+/* 초보자 튜토리얼 코치마크 (말풍선) */
+.tut-overlay { position: absolute; inset: 0; z-index: 50; background: rgba(10, 14, 22, .55);
+  backdrop-filter: blur(2px); display: flex; animation: fadeIn .2s ease; }
+.tut-bubble { position: absolute; left: 50%; transform: translateX(-50%); width: min(86%, 340px);
+  background: var(--bg2); border-radius: 20px; padding: 18px 18px 16px; box-shadow: var(--shadow-md);
+  animation: fadeUp .28s ease; }
+.tut-bubble.top { top: 92px; }
+.tut-bubble.mid { top: 50%; margin-top: -70px; }
+.tut-bubble.bottom { bottom: 104px; }
+.tut-bubble::after { content: ''; position: absolute; left: 50%; margin-left: -9px; border: 9px solid transparent; }
+.tut-bubble.top::after { bottom: -17px; border-top-color: var(--bg2); }
+.tut-bubble.mid::after, .tut-bubble.bottom::after { top: -17px; border-bottom-color: var(--bg2); }
+.tut-kicker { font-size: 10.5px; font-weight: 800; font-family: var(--fd); letter-spacing: .06em;
+  color: var(--up); background: var(--up-soft); display: inline-block; padding: 4px 10px; border-radius: 999px; }
+.tut-title { font-size: 17px; font-weight: 800; margin-top: 11px; }
+.tut-body { font-size: 13px; line-height: 1.6; color: var(--dim); margin-top: 7px; }
+.tut-actions { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+.tut-skip { font-size: 12.5px; font-weight: 700; color: var(--faint); background: transparent; padding: 8px 4px; }
+.tut-next { margin-left: auto; font-size: 13.5px; font-weight: 800; color: #fff; background: var(--up);
+  padding: 10px 20px; border-radius: 12px; box-shadow: 0 6px 16px var(--up-glow); }
+.tut-dots { display: flex; justify-content: center; gap: 6px; margin-top: 13px; }
+.tut-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: .2s; }
+.tut-dots i.on { background: var(--up); width: 18px; border-radius: 3px; }
+
+/* 수익 마무리 빵빠레 폭죽 */
+.confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 30; }
+.confetti i { position: absolute; top: -12px; border-radius: 2px; opacity: .95;
+  animation-name: confetti-fall; animation-timing-function: cubic-bezier(.3, .3, .6, 1); animation-fill-mode: forwards; }
+@keyframes confetti-fall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--drift, 0), 100vh) rotate(var(--rot, 360deg)); opacity: 0; }
+}

@@ -130,21 +130,29 @@ export const useStore = create<StoreState>()(
 
       beginPlay: async () => {
         const { settings } = get()
-        set({ loadingRound: true, loadError: null })
+        set({ loadingRound: true })
         try {
           const m = await loadManifest()
           const ids = getDailyScenarioIds(dayKey(), m)
-          const idx = Math.min(get().dailyDoneCount, Math.max(0, ids.length - 1))
-          const scn = await fetchScenario(ids[idx])
+          if (!ids.length) throw new Error('no scenarios')
+          const startIdx = Math.min(get().dailyDoneCount, ids.length - 1)
+          // 삭제/누락(404)된 시나리오는 건너뛰고 다음 종목으로 폴백
+          let scn = null
+          for (let i = 0; i < ids.length; i++) {
+            const id = ids[(startIdx + i) % ids.length]
+            try { scn = await fetchScenario(id); break } catch { /* 다음 종목 시도 */ }
+          }
+          if (!scn) throw new Error('all scenarios failed')
           const game = createGame(scn, settings)
           markVisit(set, get)
           set({
             game, screen: 'play', loadingRound: false, showSettings: false, adOpen: false, roundRanked: true,
             dailyDoneCount: get().dailyDoneCount + 1,
           })
-        } catch (e) {
-          set({ loadingRound: false, loadError: (e as Error).message })
-          get().showToast('시나리오를 불러오지 못했습니다')
+        } catch {
+          // 라운드 로딩 실패는 앱 전체를 막지 않고(홈 유지) 토스트로 안내 후 재시도 가능하게
+          set({ loadingRound: false, adOpen: false })
+          get().showToast('데이터를 불러오지 못했어요 · 잠시 후 다시 시도해 주세요')
         }
       },
 

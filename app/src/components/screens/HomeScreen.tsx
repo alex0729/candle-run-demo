@@ -2,11 +2,11 @@ import { useMemo, useEffect, useState } from 'react'
 import { useStore } from '../../store/store'
 import { loadManifest } from '../../game/scenarios'
 import { getDailyRanking, rankOf } from '../../game/ranking'
-import { DAILY_FREE_PLAYS, cycleKey, cyclePhase } from '../../game/constants'
+import { DAILY_FREE_PLAYS, cycleKey, cyclePhase, cycleReturn } from '../../game/constants'
 import type { Manifest } from '../../game/types'
 import CycleTimer from '../CycleTimer'
 import SpeechBubble from '../SpeechBubble'
-import { fmt } from '../../util'
+import { fmt, pct } from '../../util'
 
 function genPreview() {
   let p = 100
@@ -27,7 +27,8 @@ export default function HomeScreen() {
   const free = s.dailyDoneCount < DAILY_FREE_PLAYS
   const settling = cyclePhase() === 'settlement'
   const played = s.dailyDoneCount > 0
-  const rank = played ? rankOf(getDailyRanking(cycleKey()), s.wallet) : 0
+  const ret = cycleReturn(s.wallet, s.cycleStartWallet)
+  const rank = played ? rankOf(getDailyRanking(cycleKey()), ret) : 0
 
   return (
     <div className="screen">
@@ -39,12 +40,12 @@ export default function HomeScreen() {
           {s.streak > 0 && <div className="streak-chip">🔥 {s.streak}일 연속 출석</div>}
         </div>
 
-        <SpeechBubble className="home-greet" mood={settling ? 'idle' : played ? 'cheer' : 'idle'}
+        <SpeechBubble className="home-greet" mood={settling ? 'idle' : played ? (ret >= 0 ? 'cheer' : 'think') : 'idle'}
           text={settling
             ? '지금은 결산 중! 곧 새 라운드가 열려 🕯️'
             : played
-              ? <>지금 <b>{rank}위</b>! 한 판 더 하면 순위가 바뀔지도 👀</>
-              : <>오늘도 <b>100만원</b>으로 시작! 상위 3등은 페이북머니 받아 🔥</>} />
+              ? <>오늘 수익률 <b>{pct(ret)}</b> · {rank}위! 더 올려볼까? 👀</>
+              : <>오늘 수익률로 승부! 상위 3등은 페이북머니 받아 🔥</>} />
 
 
         <div className="card daily-card">
@@ -54,9 +55,11 @@ export default function HomeScreen() {
           </div>
 
           <div className="daily-score">
-            <span className="ds-lbl">현재 페이북겜머니</span>
+            <span className="ds-lbl">페이북겜머니 (내 자산)</span>
             <span className="ds-amt">₩{fmt(s.wallet)}</span>
-            {played && <button className="ds-rank tap" onClick={s.goLeaderboard}>오늘 {rank}위 ›</button>}
+            {played
+              ? <button className="ds-rank tap" onClick={s.goLeaderboard}>오늘 수익률 {pct(ret)} · {rank}위 ›</button>
+              : <span className="ds-sub">오늘 수익률로 랭킹 겨루기</span>}
           </div>
 
           {settling ? (
@@ -83,7 +86,7 @@ export default function HomeScreen() {
             </>
           )}
 
-          <div className="daily-prize">🥇 3만 · 🥈 2만 · 🥉 1만원 · 매일 100만원으로 시작</div>
+          <div className="daily-prize">🥇 3만 · 🥈 2만 · 🥉 1만원 · 오늘 수익률 상위 3인</div>
         </div>
 
         <div className="mini-chart">

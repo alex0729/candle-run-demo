@@ -443,9 +443,10 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .more-card .mascot { margin: 0 auto 12px; }
 .more-x { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; border-radius: 50%;
   background: var(--surface2); color: var(--dim); font-size: 19px; font-weight: 700; line-height: 1; }
-.more-title { font-size: 20px; font-weight: 800; }
-.more-desc { font-size: 13px; line-height: 1.6; color: var(--dim); margin-top: 9px; }
+.more-title { font-size: 20px; font-weight: 800; white-space: nowrap; }
+.more-desc { font-size: 13px; line-height: 1.6; color: var(--dim); margin-top: 9px; white-space: nowrap; }
 .more-actions { display: flex; gap: 9px; margin-top: 18px; }
+.more-actions .btn { white-space: nowrap; padding: 0 10px; }
 .more-note { font-size: 10.5px; color: var(--faint); margin-top: 12px; }
 
 /* ===== v0.16 · 초보자 흐름 가이드 ===== */

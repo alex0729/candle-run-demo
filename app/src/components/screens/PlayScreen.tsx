@@ -34,7 +34,6 @@ function indState(sc: Score, kind: 'ma' | 'rsi' | 'macd' | 'vol') {
 export default function PlayScreen() {
   const s = useStore()
   const g = s.game
-  const [info, setInfo] = useState<null | 'long' | 'short'>(null)
   const beginner = s.settings.difficulty === 'beginner'
   const [tutClosed, setTutClosed] = useState(false)
 
@@ -120,17 +119,6 @@ export default function PlayScreen() {
       </div>
 
       <div className="actionbar">
-        {info && (
-          <div className="info-pop-wrap" onClick={() => setInfo(null)}>
-            <div className={cls('info-pop', info)} onClick={(e) => e.stopPropagation()}>
-              <b>{info === 'long' ? '매수 (LONG)' : '공매도 (SHORT)'}</b>
-              <p>{info === 'long'
-                ? <>가격이 <em className="up">상승</em>하면 수익, 하락하면 손실이에요.</>
-                : <>가격이 <em className="down">하락</em>하면 수익, 상승하면 손실이에요.</>}</p>
-              <span className="info-close">탭하여 닫기</span>
-            </div>
-          </div>
-        )}
         {coachMsg && (
           <div className="beginner-coach">
             <SpeechBubble mood={coachMsg.mood} text={coachMsg.text} size={40} />
@@ -138,28 +126,28 @@ export default function PlayScreen() {
         )}
         {!hasPos ? (
           <div className="row">
-            <button className={cls('btn btn-red g1', beginner && 'has-sub pulse')} onClick={s.buy}>
-              <span className="btn-lead">매수<i className="qmark" onClick={(e) => { e.stopPropagation(); setInfo('long') }}>?</i></span>
-              {beginner && <small className="btn-sub">오를 때</small>}
+            <button className={cls('btn btn-red g1 has-sub', beginner && 'pulse')} onClick={s.buy}>
+              <span className="btn-lead">매수</span>
+              <small className="btn-sub">오를 때 수익</small>
             </button>
-            <button className={cls('btn btn-blue g1', beginner && 'has-sub pulse')} onClick={s.short}>
-              <span className="btn-lead">공매도<i className="qmark" onClick={(e) => { e.stopPropagation(); setInfo('short') }}>?</i></span>
-              {beginner && <small className="btn-sub">내릴 때</small>}
+            <button className={cls('btn btn-blue g1 has-sub', beginner && 'pulse')} onClick={s.short}>
+              <span className="btn-lead">공매도</span>
+              <small className="btn-sub">내릴 때 수익</small>
             </button>
-            <button className={cls('btn btn-surface g1', beginner && 'has-sub')} onClick={s.advance}>
+            <button className="btn btn-surface g1 has-sub" onClick={s.advance}>
               <span className="btn-lead">다음턴 ▶</span>
-              {beginner && <small className="btn-sub">지켜보기</small>}
+              <small className="btn-sub">지켜보기</small>
             </button>
           </div>
         ) : (
           <div className="row">
-            <button className={cls('btn btn-dark grow13', beginner && 'has-sub pulse')} onClick={s.sell}>
+            <button className={cls('btn btn-dark grow13 has-sub', beginner && 'pulse')} onClick={s.sell}>
               <span className="btn-lead">청산</span>
-              {beginner && <small className="btn-sub">지금 정리</small>}
+              <small className="btn-sub">지금 정리</small>
             </button>
-            <button className={cls('btn btn-surface g1', beginner && 'has-sub')} onClick={s.advance}>
+            <button className="btn btn-surface g1 has-sub" onClick={s.advance}>
               <span className="btn-lead">보유 ▶</span>
-              {beginner && <small className="btn-sub">더 지켜보기</small>}
+              <small className="btn-sub">더 지켜보기</small>
             </button>
           </div>
         )}

@@ -359,8 +359,9 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .tut-bubble.mid::after, .tut-bubble.bottom::after { top: -17px; border-bottom-color: var(--bg2); }
 .tut-kicker { font-size: 10.5px; font-weight: 800; font-family: var(--fd); letter-spacing: .06em;
   color: var(--up); background: var(--up-soft); display: inline-block; padding: 4px 10px; border-radius: 999px; }
-.tut-title { font-size: 17px; font-weight: 800; margin-top: 11px; }
-.tut-body { font-size: 13px; line-height: 1.6; color: var(--dim); margin-top: 7px; }
+.tut-head { display: flex; align-items: center; gap: 9px; }
+.tut-title { font-size: 20px; font-weight: 800; margin-top: 10px; }
+.tut-body { font-size: 15px; line-height: 1.55; color: var(--dim); margin-top: 6px; }
 .tut-actions { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
 .tut-skip { font-size: 12.5px; font-weight: 700; color: var(--faint); background: transparent; padding: 8px 4px; }
 .tut-next { margin-left: auto; font-size: 13.5px; font-weight: 800; color: #fff; background: var(--up);
@@ -446,3 +447,40 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .more-desc { font-size: 13px; line-height: 1.6; color: var(--dim); margin-top: 9px; }
 .more-actions { display: flex; gap: 9px; margin-top: 18px; }
 .more-note { font-size: 10.5px; color: var(--faint); margin-top: 12px; }
+
+/* ===== v0.16 · 초보자 흐름 가이드 ===== */
+/* 진행 단계 표시(진입 → 보유 → 청산) */
+.flow-steps { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 2px 18px 6px; }
+.flow-steps .fs { font-size: 12.5px; font-weight: 800; color: var(--faint); background: var(--surface2);
+  border-radius: 999px; padding: 5px 12px; transition: .2s; }
+.flow-steps .fs.on { color: #fff; background: var(--up); box-shadow: 0 4px 12px var(--up-glow); }
+.flow-steps .fs.done { color: var(--up); background: var(--up-soft); }
+.flow-steps .fs.next { color: var(--accent-ink); background: var(--accent); animation: pulseGlow 1.4s ease-in-out infinite; }
+.flow-steps .fs-arw { font-size: 12px; font-weight: 800; color: var(--faint); }
+
+/* 초보자 코치 바(버튼 위 상시 안내, 크게) */
+.beginner-coach { margin-bottom: 10px; }
+.beginner-coach .mascot-text { font-size: 16px; }
+.beginner-coach .mascot-bubble { border-color: rgba(232,163,0,.4); background: #fffdf7; }
+
+/* 버튼 서브라벨(초보자) */
+.btn.has-sub { flex-direction: column; gap: 1px; height: 60px; }
+.btn .btn-lead { display: inline-flex; align-items: center; justify-content: center; font-size: 17px; }
+.btn .btn-sub { font-size: 11px; font-weight: 700; opacity: .82; line-height: 1; }
+
+/* 예상 행동 버튼 강조(펄스) */
+.btn.pulse { animation: pulseGlow 1.5s ease-in-out infinite; }
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 44, 54, .0); transform: translateZ(0) scale(1); }
+  50% { box-shadow: 0 0 0 6px rgba(251, 44, 54, .16); transform: scale(1.015); }
+}
+.btn.btn-blue.pulse { animation-name: pulseGlowBlue; }
+@keyframes pulseGlowBlue {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(31, 107, 255, .0); transform: scale(1); }
+  50% { box-shadow: 0 0 0 6px rgba(31, 107, 255, .16); transform: scale(1.015); }
+}
+.btn.btn-dark.pulse { animation-name: pulseGlowDark; }
+@keyframes pulseGlowDark {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(19, 22, 29, .0); transform: scale(1); }
+  50% { box-shadow: 0 0 0 6px rgba(19, 22, 29, .14); transform: scale(1.015); }
+}

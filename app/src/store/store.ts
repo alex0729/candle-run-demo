@@ -9,17 +9,18 @@ import { fetchScenario, loadManifest } from '../game/scenarios'
 import { emptyStats, SessionStats } from '../game/profile'
 import { getDailyScenarioIds } from '../game/daily'
 import {
-  DAILY_FREE_PLAYS, START_MONEY, cycleKey, prevCycleKey, cyclePhase, monthKey,
+  DAILY_FREE_PLAYS, START_MONEY, MIN_WALLET, cycleKey, prevCycleKey, cyclePhase, monthKey,
 } from '../game/constants'
 
 export type Screen = 'setup' | 'play' | 'result' | 'leaderboard'
 
 interface Persisted {
-  wallet: number           // 현재 사이클 페이북겜머니(=일간 랭킹 점수). 매 사이클 100만으로 리셋
+  wallet: number           // 페이북겜머니(지속 자산). 리셋 없이 게임마다 복리로 변동
+  cycleStartWallet: number // 이번 사이클 개장 시점의 겜머니 스냅샷(= 전날 종료 겜머니). 수익률 기준값
   lifetime: SessionStats
   streak: number
   lastPlayCycle: string    // 마지막으로 플레이한 사이클 키(연속 출석 판정)
-  cycleKey: string         // wallet이 속한 사이클(새벽 7시 개장 기준)
+  cycleKey: string         // cycleStartWallet이 속한 사이클(새벽 7시 개장 기준)
   dailyDoneCount: number   // 이번 사이클 진행한 판 수(무료 2 + 광고 추가)
   monthStr: string
   monthlyVisits: number
@@ -76,7 +77,7 @@ function settle(state: StoreState, g: GameState) {
   const r = g.noTrade ? 0 : g.myRet ?? 0
   const before = state.wallet
   const delta = g.noTrade ? 0 : Math.round(before * r)
-  const wallet = Math.max(0, before + delta)
+  const wallet = Math.max(MIN_WALLET, before + delta) // 지속 자산 · 하한 보장(파산 방지)
   const acc = (base: SessionStats): SessionStats => {
     const traded = !g.noTrade && !!g.pos
     return {
@@ -102,7 +103,7 @@ function captureRatio(g: GameState): number {
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
-      wallet: START_MONEY,
+      wallet: START_MONEY, cycleStartWallet: START_MONEY,
       lifetime: { ...emptyStats },
       streak: 0, lastPlayCycle: '', cycleKey: '', dailyDoneCount: 0, monthStr: '', monthlyVisits: 0,
       ready: false, loadError: null, loadingRound: false,
@@ -112,7 +113,7 @@ export const useStore = create<StoreState>()(
       toast: null, tip: null, tipOpen: false, showSettings: false, adOpen: false, roundRanked: true,
 
       init: async () => {
-        rollover(set, get) // 로드 시점의 사이클로 정렬(지난 사이클이면 겜머니 100만 리셋)
+        rollover(set, get) // 로드 시점의 사이클로 정렬(개장했으면 수익률 기준값 스냅샷)
         try { await loadManifest(); set({ ready: true, loadError: null }) }
         catch (e) { set({ loadError: (e as Error).message, ready: false }) }
       },
@@ -198,9 +199,9 @@ export const useStore = create<StoreState>()(
       },
     }),
     {
-      name: 'candlerun-v0.13',
+      name: 'candlerun-v0.15',
       partialize: (s) => ({
-        wallet: s.wallet, lifetime: s.lifetime,
+        wallet: s.wallet, cycleStartWallet: s.cycleStartWallet, lifetime: s.lifetime,
         streak: s.streak, lastPlayCycle: s.lastPlayCycle, cycleKey: s.cycleKey, dailyDoneCount: s.dailyDoneCount,
         monthStr: s.monthStr, monthlyVisits: s.monthlyVisits,
       }),
@@ -215,8 +216,12 @@ function rollover(set: SetFn, get: GetFn) {
   const s = get()
   const ck = cycleKey(), mk = monthKey()
   const patch: Partial<StoreState> = {}
-  // 새 사이클 개장(새벽 7시) → 겜머니 100만으로 리셋, 판수 초기화
-  if (s.cycleKey !== ck) { patch.cycleKey = ck; patch.wallet = START_MONEY; patch.dailyDoneCount = 0 }
+  // 새 사이클 개장(새벽 7시): 겜머니는 리셋하지 않고 이어감. 단 파산(<=하한)이면 최소 시드로 리필.
+  // 개장 시점 겜머니를 스냅샷 → 이번 사이클 수익률(=랭킹 점수)의 기준값.
+  if (s.cycleKey !== ck) {
+    const w = s.wallet <= MIN_WALLET ? START_MONEY : s.wallet
+    patch.cycleKey = ck; patch.wallet = w; patch.cycleStartWallet = w; patch.dailyDoneCount = 0
+  }
   if (s.monthStr !== mk) { patch.monthStr = mk; patch.monthlyVisits = 0 }
   if (Object.keys(patch).length) set(patch)
 }

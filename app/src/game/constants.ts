@@ -2,7 +2,13 @@
 export const INVEST_LINK = '#' // TODO: 실제 투자정보 화면 URL로 교체
 export const DAILY_FREE_PLAYS = 2 // 한 사이클 무료 판수(이후 광고 시청 시 이어하기)
 
-export const START_MONEY = 1_000_000 // 매 사이클 시작 페이북겜머니(100만)
+export const START_MONEY = 1_000_000 // 시작 페이북겜머니(100만) · 지속 자산(리셋 없음)
+export const MIN_WALLET = 10_000     // 겜머니 하한(파산 방지). 사이클 개장 시 이 값 이하면 최소 시드로 리필
+
+// 사이클 누적수익률(일간 랭킹 점수) = 현재 겜머니 / 사이클 시작 겜머니 − 1
+export function cycleReturn(wallet: number, cycleStartWallet: number): number {
+  return cycleStartWallet > 0 ? wallet / cycleStartWallet - 1 : 0
+}
 export const CYCLE_CLOSE_HOUR = 6 // 마감·결산 시각(새벽 6시)
 export const CYCLE_OPEN_HOUR = 7  // 다음 라운드 개장 시각(새벽 7시)
 export const PRIZES = [30_000, 20_000, 10_000] // 1·2·3등 페이북머니(원)

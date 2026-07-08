@@ -30,7 +30,7 @@ jobs:
         working-directory: app
         run: npm ci
 
-      - name: Build app (v0.14)
+      - name: Build app (v0.15)
         working-directory: app
         run: npm run build
 
@@ -58,6 +58,8 @@ jobs:
           cp -r app/dist/data app/dist/legacy/v0.12/data
           cp -r legacy/v0.13 app/dist/legacy/v0.13
           cp -r app/dist/data app/dist/legacy/v0.13/data
+          cp -r legacy/v0.14 app/dist/legacy/v0.14
+          cp -r app/dist/data app/dist/legacy/v0.14/data
 
       - name: SPA 404 fallback (unknown path/refresh → app root)
         run: |

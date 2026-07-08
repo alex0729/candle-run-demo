@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useStore } from '../../store/store'
 import { getDailyRanking, getMonthlyVisitRanking, RankEntry } from '../../game/ranking'
-import { cycleKey, monthKey, PRIZES } from '../../game/constants'
+import { cycleKey, monthKey, cycleReturn, PRIZES } from '../../game/constants'
 import CycleTimer from '../CycleTimer'
-import { cls, fmt } from '../../util'
+import { cls, fmt, pct } from '../../util'
 
 const MEDAL = ['🥇', '🥈', '🥉']
 type Period = 'daily' | 'monthly'
@@ -15,10 +15,10 @@ export default function LeaderboardScreen() {
 
   const daily = period === 'daily'
   const list: RankEntry[] = daily ? getDailyRanking(cycleKey()) : getMonthlyVisitRanking(monthKey())
-  const myScore = daily ? s.wallet : s.monthlyVisits
+  const myScore = daily ? cycleReturn(s.wallet, s.cycleStartWallet) : s.monthlyVisits
   const played = daily ? (s.dailyDoneCount > 0) : (s.monthlyVisits > 0)
-  const fmtScore = (n: number) => daily ? `₩${fmt(n)}` : `${fmt(n)}회`
-  const subLabel = daily ? '현재 페이북겜머니' : '이번달 방문'
+  const fmtScore = (n: number) => daily ? pct(n) : `${fmt(n)}회`
+  const subLabel = daily ? '오늘 수익률' : '이번달 방문'
 
   const base = list.map((e) => ({ ...e, mine: false }))
   const all = played ? [...base, { name: '나', tag: 'YOU', score: myScore, mine: true }] : base
@@ -41,12 +41,12 @@ export default function LeaderboardScreen() {
         {daily && (
           <div className="prize-strip">
             <span>🥇 3만</span><span>🥈 2만</span><span>🥉 1만</span>
-            <em>새벽 6시 겜머니 상위 3인 페이북머니 지급</em>
+            <em>새벽 6시 오늘 수익률 상위 3인 페이북머니 지급</em>
           </div>
         )}
 
         <div className="lb-toggle">
-          <button className={cls(period === 'daily' && 'on')} onClick={() => setPeriod('daily')}>일간 (겜머니)</button>
+          <button className={cls(period === 'daily' && 'on')} onClick={() => setPeriod('daily')}>일간 (수익률)</button>
           <button className={cls(period === 'monthly' && 'on')} onClick={() => setPeriod('monthly')}>월간 (방문)</button>
         </div>
 
@@ -73,11 +73,11 @@ export default function LeaderboardScreen() {
               <div className="lb-name">{e.mine ? '나' : e.name}{e.tag && <span className="tag">{e.tag}</span>}
                 {daily && prizeOf(e.rank) > 0 && <span className="prize-tag">₩{fmt(prizeOf(e.rank))}</span>}
               </div>
-              <div className="lb-money">{fmtScore(e.score)}</div>
+              <div className="lb-money" style={daily && e.score < 0 ? { color: 'var(--down)' } : undefined}>{fmtScore(e.score)}</div>
             </div>
           ))}
         </div>
-        <div className="disclaimer" style={{ marginTop: 14 }}>랭킹은 프로토타입 예시 데이터입니다 · 일간=현재 겜머니, 월간=방문횟수 기준</div>
+        <div className="disclaimer" style={{ marginTop: 14 }}>랭킹은 프로토타입 예시 데이터입니다 · 일간=오늘 수익률, 월간=방문횟수 기준</div>
       </div>
 
       <div className="actionbar">

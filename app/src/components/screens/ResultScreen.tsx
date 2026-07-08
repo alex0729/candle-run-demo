@@ -7,7 +7,7 @@ import PlayMorePrompt from '../PlayMorePrompt'
 import { generateReview, verdictOf } from '../../game/engine'
 import { diagnose } from '../../game/profile'
 import { getDailyRanking, rankOf } from '../../game/ranking'
-import { INVEST_LINK, PRIZES, cycleKey } from '../../game/constants'
+import { INVEST_LINK, PRIZES, cycleKey, cycleReturn } from '../../game/constants'
 import { cls, fmt, pct } from '../../util'
 
 export default function ResultScreen() {
@@ -36,7 +36,8 @@ export default function ResultScreen() {
   const sd = g.scenario.data[g.start]?.date || g.scenario.start_date || ''
   const ed = g.scenario.data[Math.min(g.start + g.budgetMax, g.scenario.data.length - 1)]?.date || g.scenario.end_date || ''
   const period = sd && ed ? `${sd}~${ed}` : ''
-  const dailyRank = rankOf(getDailyRanking(cycleKey()), s.wallet)
+  const cycRet = cycleReturn(s.wallet, s.cycleStartWallet)
+  const dailyRank = rankOf(getDailyRanking(cycleKey()), cycRet)
   const myPrize = dailyRank >= 1 && dailyRank <= PRIZES.length ? PRIZES[dailyRank - 1] : 0
 
   return (
@@ -47,7 +48,7 @@ export default function ResultScreen() {
           <div className="res-kicker">복기 · {verdictOf(g)}</div>
           <div className={cls('res-big', c0)}>{g.noTrade ? '0.0%' : pct(r)}</div>
           <div className="res-sub">{g.noTrade ? '관망 · 손익 없음' : <>이번 판 수익 <b style={{ color: won > 0 ? 'var(--up)' : won < 0 ? 'var(--down)' : 'var(--text)' }}>{won >= 0 ? '+' : ''}₩{fmt(won)}</b></>}</div>
-          <button className="reward-pill tap" onClick={s.goLeaderboard}>페이북겜머니 <b>₩{fmt(s.wallet)}</b> · 오늘 {dailyRank}위{myPrize > 0 && <> · 🏆 페이북머니 {fmt(myPrize)}원</>} <span className="tap-hint">랭킹 ›</span></button>
+          <button className="reward-pill tap" onClick={s.goLeaderboard}>겜머니 <b>₩{fmt(s.wallet)}</b> · 오늘 <b>{pct(cycRet)}</b> · {dailyRank}위{myPrize > 0 && <> · 🏆 {fmt(myPrize)}원</>} <span className="tap-hint">랭킹 ›</span></button>
         </div>
 
         {/* 정답 공개(reveal) */}

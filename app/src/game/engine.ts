@@ -131,34 +131,36 @@ export function computeResult(g: GameState): void {
 }
 
 export interface Review { good: string; risk: string }
+// 캔들이 코칭 — 짧고 다정하게(반말 혼용), 핵심 근거는 유지
 export function generateReview(g: GameState): Review {
   const bnhRet = g.bnhRet ?? 0
   if (g.noTrade) {
     return bnhRet < 0
-      ? { good: '관망은 좋은 선택이었습니다. 이후 가격이 하락했기 때문에 무리하게 진입하지 않은 판단이 손실을 피하는 데 도움이 되었습니다.', risk: '다만 관망만 반복하면 좋은 기회를 놓칠 수 있습니다. 상승 신호가 겹치는 구간에서는 소액 진입을 검토해 보세요.' }
-      : { good: '관망으로 손실 리스크는 피했습니다.', risk: '이후 가격이 상승했기 때문에 기회를 놓친 면이 있습니다. MA·MACD·거래량이 함께 개선되고 있었다면 진입 후보로 볼 수 있었습니다.' }
+      ? { good: '관망 정답! 이후 하락했거든 👍', risk: '근데 관망만 반복하면 기회도 놓쳐. 신호 겹치면 소액 도전!' }
+      : { good: '관망으로 손실은 피했어.', risk: '이후 올랐어 😮 지표가 같이 좋아졌으면 진입각이었어.' }
   }
   const entry = g.entrySignal, exit = g.exitSignal, r = g.myRet ?? 0
+  const sc = entry ? `${entry.score >= 0 ? '+' : ''}${entry.score}` : ''
   if (r > 0 && entry && entry.score >= 2)
     return {
-      good: `매수 시점 Signal은 ${entry.score >= 0 ? '+' : ''}${entry.score}, ${entry.label}였습니다. 추세와 모멘텀이 양호해 진입 판단은 지표상 합리적이었습니다.`,
+      good: `매수 때 Signal ${sc}! 추세·모멘텀 좋았어 😊`,
       risk: exit && exit.score >= 2
-        ? '청산 시점에도 상승 신호가 일부 남아 있었습니다. 전량 매도보다 분할 매도 전략도 고려할 수 있습니다.'
-        : '수익 구간에서 신호가 약해질 때 청산한 점은 리스크 관리 측면에서 긍정적입니다.',
+        ? '청산 때도 상승 신호 남았었어 — 분할 매도도 좋아!'
+        : '신호 약해질 때 청산 👍 리스크 관리 굿!',
     }
   if (r <= 0 && entry && (entry.components.rsi.value ?? 0) >= 70)
     return {
-      good: '결과는 아쉬웠지만, 과열 구간의 리스크를 학습할 수 있는 사례입니다.',
-      risk: '매수 시점 RSI가 높아 단기 과열 가능성이 있었습니다. 이런 구간에서는 조정 후 재상승 여부를 확인하는 편이 안정적입니다.',
+      good: '아쉽지만 과열 구간 리스크를 배운 판이야.',
+      risk: '매수 때 RSI 과열이었어 😮 조정 후 재상승 보고 들어가자.',
     }
   if (r <= 0)
     return {
-      good: '손실 결과를 통해 약세 신호에서의 진입 리스크를 확인할 수 있었습니다.',
-      risk: entry ? `진입 시점 Signal은 ${entry.score >= 0 ? '+' : ''}${entry.score}, ${entry.label}였습니다. 상승 근거가 충분치 않았다면 관망이 더 안정적이었을 수 있습니다.` : '진입 당시 지표 근거가 충분했는지 복기해 보세요.',
+      good: '약세에서의 진입 리스크를 배운 판이야.',
+      risk: entry ? `진입 Signal ${sc} — 상승 근거가 약했어. 이럴 땐 관망이 안전!` : '진입 근거가 충분했는지 다시 보자.',
     }
   return {
-    good: '수익으로 마무리했습니다. 진입과 청산 타이밍이 전반적으로 나쁘지 않았습니다.',
-    risk: '다음에는 진입 시점의 거래량과 RSI 과열 여부를 함께 확인해 보세요.',
+    good: '수익 마무리 👏 타이밍 나쁘지 않았어!',
+    risk: '다음엔 거래량·RSI 과열도 같이 보자.',
   }
 }
 

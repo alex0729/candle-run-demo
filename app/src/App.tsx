@@ -23,10 +23,11 @@ export default function App() {
             <div className="brand-sub">CANDLE RUN</div>
           </div>
         </div>
-        <div className="wallet">
+        <button className="wallet" onClick={s.goLeaderboard} aria-label="랭킹 보기">
           <span className="wallet-coin">₩</span>
           <div className="wallet-meta"><span>페이북겜머니</span><span className="wallet-amt">{fmt(s.wallet)}</span></div>
-        </div>
+          <span className="wallet-rank">🏆</span>
+        </button>
       </header>
 
       <main>

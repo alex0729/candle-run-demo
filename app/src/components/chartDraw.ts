@@ -142,33 +142,48 @@ export function drawChart(
     c.beginPath(); c.moveTo(x, padT); c.lineTo(x, padT + priceH); c.stroke(); c.setLineDash([])
   }
 
-  // markers
+  // markers (reveal 모드에서 더 크고 뚜렷하게)
+  const k = mode === 'reveal' ? 1.4 : 1
+  const fs = mode === 'reveal' ? 10 : 8
   const marker = (idx: number, side: 'long' | 'short', kind: 'entry' | 'exit') => {
     if (idx < drawStart || idx > drawEnd) return
     const x = xAt(idx), y = yAt(d[idx].c)
     c.save(); c.translate(x, y)
     const col = side === 'long' ? COL.up : COL.down
     if (kind === 'entry') {
-      c.fillStyle = col; c.beginPath()
-      if (side === 'long') { c.moveTo(0, 8); c.lineTo(-6, 18); c.lineTo(6, 18) } else { c.moveTo(0, -8); c.lineTo(-6, -18); c.lineTo(6, -18) }
-      c.closePath(); c.fill()
-      c.fillStyle = '#fff'; c.font = '800 8px Pretendard, sans-serif'; c.textAlign = 'center'
-      c.fillText(side === 'long' ? '매수' : '공매도', 0, side === 'long' ? 30 : -22)
+      c.fillStyle = col; c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.beginPath()
+      if (side === 'long') { c.moveTo(0, 8 * k); c.lineTo(-6 * k, 18 * k); c.lineTo(6 * k, 18 * k) } else { c.moveTo(0, -8 * k); c.lineTo(-6 * k, -18 * k); c.lineTo(6 * k, -18 * k) }
+      c.closePath(); c.fill(); c.stroke()
+      c.fillStyle = col; c.font = `800 ${fs}px Pretendard, sans-serif`; c.textAlign = 'center'
+      c.fillText(side === 'long' ? '내 매수' : '내 공매도', 0, side === 'long' ? 32 * k : -22 * k)
     } else {
-      c.strokeStyle = COL.gold; c.fillStyle = 'rgba(245,179,1,.9)'; c.lineWidth = 2
-      c.beginPath(); c.arc(0, 0, 5, 0, 7); c.fill()
-      c.fillStyle = COL.gold; c.font = '800 8px Pretendard, sans-serif'; c.textAlign = 'center'; c.fillText('청산', 0, -12)
+      c.fillStyle = COL.text; c.strokeStyle = '#fff'; c.lineWidth = 2
+      c.beginPath(); c.arc(0, 0, 5 * k, 0, 7); c.fill(); c.stroke()
+      c.fillStyle = COL.text; c.font = `800 ${fs}px Pretendard, sans-serif`; c.textAlign = 'center'; c.fillText('내 청산', 0, -13 * k)
     }
     c.restore()
   }
+
+  // best trade (reveal): 최적 구간 음영 + 라벨 마커 — "최선의 한 수" 강조
+  if (mode === 'reveal' && g.best) {
+    const bi = g.best.ei, bx = g.best.xi
+    const xa = xAt(Math.min(bi, bx)), xb = xAt(Math.max(bi, bx))
+    c.fillStyle = 'rgba(245,179,1,.12)'; c.fillRect(xa, padT, xb - xa, priceH)
+    c.strokeStyle = 'rgba(245,179,1,.6)'; c.lineWidth = 1.4; c.setLineDash([4, 3])
+    c.strokeRect(xa, padT, xb - xa, priceH); c.setLineDash([])
+    const tag = (idx: number, label: string) => {
+      const x = xAt(idx), y = yAt(d[idx].c)
+      c.fillStyle = COL.gold; c.strokeStyle = '#fff'; c.lineWidth = 1.5
+      c.beginPath(); c.arc(x, y, 5, 0, 7); c.fill(); c.stroke()
+      c.fillStyle = COL.gold; c.font = '800 10px Pretendard, sans-serif'; c.textAlign = 'center'
+      c.fillText(label, x, y - 11)
+    }
+    tag(bi, g.best.side === 'short' ? '최적 공매도' : '최적 매수')
+    tag(bx, '최적 청산')
+  }
+
   if (g.pos) marker(g.pos.at, g.pos.side, 'entry')
   if (g.exit) marker(g.exit.at, g.pos ? g.pos.side : 'long', 'exit')
-
-  // best trade markers (reveal)
-  if (mode === 'reveal' && g.best) {
-    const dia = (idx: number, col: string) => { const x = xAt(idx), y = yAt(d[idx].c); c.save(); c.translate(x, y); c.rotate(Math.PI / 4); c.strokeStyle = col; c.lineWidth = 1.5; c.strokeRect(-4, -4, 8, 8); c.restore() }
-    dia(g.best.ei, COL.text); dia(g.best.xi, COL.text)
-  }
 
   // volume subchart
   if (volOn) {

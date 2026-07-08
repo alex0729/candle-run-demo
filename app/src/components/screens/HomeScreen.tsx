@@ -5,6 +5,7 @@ import { getDailyRanking, rankOf } from '../../game/ranking'
 import { DAILY_FREE_PLAYS, cycleKey, cyclePhase } from '../../game/constants'
 import type { Manifest } from '../../game/types'
 import CycleTimer from '../CycleTimer'
+import SpeechBubble from '../SpeechBubble'
 import { fmt } from '../../util'
 
 function genPreview() {
@@ -38,6 +39,14 @@ export default function HomeScreen() {
           {s.streak > 0 && <div className="streak-chip">🔥 {s.streak}일 연속 출석</div>}
         </div>
 
+        <SpeechBubble className="home-greet" mood={settling ? 'idle' : played ? 'cheer' : 'idle'}
+          text={settling
+            ? '지금은 결산 중! 곧 새 라운드가 열려 🕯️'
+            : played
+              ? <>지금 <b>{rank}위</b>! 한 판 더 하면 순위가 바뀔지도 👀</>
+              : <>오늘도 <b>100만원</b>으로 시작! 상위 3등은 페이북머니 받아 🔥</>} />
+
+
         <div className="card daily-card">
           <div className="daily-head">
             <span className="daily-t">오늘의 승부</span>
@@ -47,7 +56,7 @@ export default function HomeScreen() {
           <div className="daily-score">
             <span className="ds-lbl">현재 페이북겜머니</span>
             <span className="ds-amt">₩{fmt(s.wallet)}</span>
-            {played && <span className="ds-rank">오늘 {rank}위</span>}
+            {played && <button className="ds-rank tap" onClick={s.goLeaderboard}>오늘 {rank}위 ›</button>}
           </div>
 
           {settling ? (
@@ -84,12 +93,10 @@ export default function HomeScreen() {
         </div>
 
         {m && <div className="home-meta">일반 단일종목 {m.by_source?.real ?? ''} · 블라인드 · ETF/ETN 제외</div>}
+        <button className="home-rank-link" onClick={s.goLeaderboard}>🏆 오늘의 랭킹 보기 ›</button>
       </div>
 
       <div className="actionbar">
-        <div className="row">
-          <button className="btn btn-surface g1" onClick={s.goLeaderboard}>🏆 오늘의 랭킹</button>
-        </div>
         <div className="home-ind"><i /></div>
       </div>
     </div>

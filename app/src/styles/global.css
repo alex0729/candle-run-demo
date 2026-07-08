@@ -66,7 +66,9 @@ header { flex: none; display: flex; align-items: center; justify-content: space-
 .brand-title { font-family: var(--fd); font-weight: 700; font-size: 25px; letter-spacing: -.02em; line-height: 1; }
 .brand-title b { color: var(--titlebrand); }
 .brand-sub { font-family: var(--fd); font-weight: 500; font-size: 9.5px; letter-spacing: .32em; color: var(--faint); margin-top: 3px; }
-.wallet { display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 15px 8px 10px; box-shadow: var(--shadow-sm); }
+.wallet { display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 13px 8px 10px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform .12s; }
+.wallet:active { transform: scale(.97); }
+.wallet-rank { font-size: 13px; margin-left: 1px; }
 .wallet-coin { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
 .wallet-meta { display: flex; flex-direction: column; line-height: 1.1; }
 .wallet-meta span:first-child { font-size: 9.5px; color: var(--faint); letter-spacing: .04em; }
@@ -151,6 +153,9 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .res-sub b { color: var(--text); font-weight: 800; }
 .reward-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 8px 16px; font-size: 13.5px; font-weight: 700; }
 .reward-pill b { font-weight: 800; }
+.reward-pill.tap { cursor: pointer; transition: transform .12s; }
+.reward-pill.tap:active { transform: scale(.97); }
+.reward-pill .tap-hint { font-size: 11px; opacity: .7; font-weight: 800; }
 .rank-hint { font-size: 12.5px; color: var(--dim); margin-top: 9px; }
 .rank-hint b { color: var(--up); font-weight: 800; }
 .blk { padding: 17px; margin-bottom: 12px; }
@@ -329,16 +334,14 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
 .seg.on .seg-sub { color: var(--up); opacity: .8; }
 
 /* 매턴 팁 (2초 노출 후 사라짐, 초보자) */
-.turn-tip { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 8;
-  max-width: 92%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-size: 12.5px; font-weight: 800; color: #fff; background: rgba(19, 22, 29, .92);
-  padding: 9px 15px; border-radius: 999px; box-shadow: 0 8px 22px rgba(0, 0, 0, .25);
-  animation: tipInOut 2s ease forwards; pointer-events: none; }
+.turn-tip { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 8;
+  display: flex; justify-content: center; pointer-events: none;
+  animation: tipInOut 2.6s ease forwards; }
 @keyframes tipInOut {
-  0% { opacity: 0; transform: translate(-50%, 10px); }
-  12% { opacity: 1; transform: translate(-50%, 0); }
-  82% { opacity: 1; transform: translate(-50%, 0); }
-  100% { opacity: 0; transform: translate(-50%, -6px); }
+  0% { opacity: 0; transform: translateY(10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  86% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
 }
 
 /* 초보자 튜토리얼 코치마크 (말풍선) */
@@ -373,3 +376,72 @@ main { flex: 1; display: flex; flex-direction: column; min-height: 0; position: 
   0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
   100% { transform: translate(var(--drift, 0), 100vh) rotate(var(--rot, 360deg)); opacity: 0; }
 }
+
+/* ===== v0.14 · 캔들이 마스코트 & UX 리뉴얼 ===== */
+/* 마스코트 아바타 */
+.mascot { position: relative; flex: none; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 35%, #fff6e6, #ffe8c2);
+  border: 2px solid var(--ring, var(--gold)); box-shadow: 0 3px 10px rgba(232,163,0,.22); }
+.mascot-face { line-height: 1; filter: drop-shadow(0 1px 1px rgba(0,0,0,.12)); }
+.mascot-badge { position: absolute; right: -3px; bottom: -3px; line-height: 1;
+  background: #fff; border-radius: 50%; padding: 1px; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+
+/* 말풍선(캔들이 한마디) */
+.mascot-row { display: flex; align-items: flex-start; gap: 10px; }
+.mascot-bubble { position: relative; flex: 1; min-width: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px 16px 16px 16px; padding: 9px 13px; box-shadow: var(--shadow-sm); }
+.mascot-bubble.dark { background: rgba(19,22,29,.94); border-color: transparent; color: #fff; }
+.mascot-bubble::before { content: ''; position: absolute; left: -6px; top: 11px; width: 10px; height: 10px;
+  background: inherit; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  transform: rotate(45deg); }
+.mascot-bubble.dark::before { border-color: transparent; }
+.mascot-name { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; color: var(--gold); }
+.mascot-bubble.dark .mascot-name { color: #ffd86b; }
+.mascot-tag { font-size: 10.5px; font-weight: 800; color: var(--dim); background: var(--surface2); border-radius: 999px; padding: 2px 8px; }
+.mascot-bubble.dark .mascot-tag { color: #fff; background: rgba(255,255,255,.16); }
+.mascot-text { font-size: 14.5px; font-weight: 700; line-height: 1.4; margin-top: 3px; color: var(--text); }
+.mascot-bubble.dark .mascot-text { color: #fff; }
+
+/* 홈 인사 말풍선 */
+.home-greet { margin: 0 0 14px; }
+.home-greet .mascot-text b { color: var(--up); }
+
+/* 턴 중 팁 말풍선(어두운 톤, 그림자) */
+.turn-tip .mascot-row { max-width: 100%; }
+.turn-tip .mascot-bubble { box-shadow: 0 10px 26px rgba(0,0,0,.28); }
+
+/* 결과 코칭 카드(캔들이) */
+.coach-stack { display: flex; flex-direction: column; gap: 11px; margin: 4px 0 14px; }
+.coach .mascot-text { font-size: 15px; }
+.coach .mascot-text b { color: var(--up); }
+
+/* 리워드 pill 순위 칩(탭) */
+.ds-rank.tap { cursor: pointer; border: none; transition: transform .12s; }
+.ds-rank.tap:active { transform: scale(.95); }
+
+/* 홈 랭킹 텍스트 링크 */
+.home-rank-link { display: block; margin: 12px auto 2px; background: transparent; color: var(--dim);
+  font-size: 12.5px; font-weight: 800; padding: 6px 10px; }
+.home-rank-link:active { color: var(--up); }
+
+/* 결과 차트 확대 + 범례 */
+.reveal-chart { height: 300px; position: relative; }
+.reveal-legend { display: flex; justify-content: center; gap: 15px; margin-top: 8px; font-size: 11px; font-weight: 800; color: var(--dim); }
+.reveal-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.reveal-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.reveal-legend .lg-buy { background: var(--up); }
+.reveal-legend .lg-exit { background: var(--accent); }
+.reveal-legend .lg-best { background: var(--gold); }
+
+/* '한 판 더' 자동 팝업 */
+.more-overlay { position: absolute; inset: 0; z-index: 45; background: rgba(10,14,22,.6); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn .22s ease; }
+.more-card { position: relative; width: 100%; max-width: 330px; background: var(--bg2); border-radius: 24px;
+  padding: 24px 20px 18px; box-shadow: var(--shadow-md); text-align: center; animation: fadeUp .3s ease; }
+.more-card .mascot { margin: 0 auto 12px; }
+.more-x { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface2); color: var(--dim); font-size: 19px; font-weight: 700; line-height: 1; }
+.more-title { font-size: 20px; font-weight: 800; }
+.more-desc { font-size: 13px; line-height: 1.6; color: var(--dim); margin-top: 9px; }
+.more-actions { display: flex; gap: 9px; margin-top: 18px; }
+.more-note { font-size: 10.5px; color: var(--faint); margin-top: 12px; }

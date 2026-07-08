@@ -2,10 +2,12 @@ import { useMemo } from 'react'
 import { useStore } from '../../store/store'
 import Chart from '../Chart'
 import Confetti from '../Confetti'
+import SpeechBubble from '../SpeechBubble'
+import PlayMorePrompt from '../PlayMorePrompt'
 import { generateReview, verdictOf } from '../../game/engine'
 import { diagnose } from '../../game/profile'
 import { getDailyRanking, rankOf } from '../../game/ranking'
-import { INVEST_LINK, DAILY_FREE_PLAYS, PRIZES, cycleKey } from '../../game/constants'
+import { INVEST_LINK, PRIZES, cycleKey } from '../../game/constants'
 import { cls, fmt, pct } from '../../util'
 
 export default function ResultScreen() {
@@ -35,7 +37,6 @@ export default function ResultScreen() {
   const ed = g.scenario.data[Math.min(g.start + g.budgetMax, g.scenario.data.length - 1)]?.date || g.scenario.end_date || ''
   const period = sd && ed ? `${sd}~${ed}` : ''
   const dailyRank = rankOf(getDailyRanking(cycleKey()), s.wallet)
-  const dailyLeft = Math.max(0, DAILY_FREE_PLAYS - s.dailyDoneCount)
   const myPrize = dailyRank >= 1 && dailyRank <= PRIZES.length ? PRIZES[dailyRank - 1] : 0
 
   return (
@@ -46,7 +47,7 @@ export default function ResultScreen() {
           <div className="res-kicker">복기 · {verdictOf(g)}</div>
           <div className={cls('res-big', c0)}>{g.noTrade ? '0.0%' : pct(r)}</div>
           <div className="res-sub">{g.noTrade ? '관망 · 손익 없음' : <>이번 판 수익 <b style={{ color: won > 0 ? 'var(--up)' : won < 0 ? 'var(--down)' : 'var(--text)' }}>{won >= 0 ? '+' : ''}₩{fmt(won)}</b></>}</div>
-          <div className="reward-pill">페이북겜머니 <b>₩{fmt(s.wallet)}</b> · 오늘 {dailyRank}위{myPrize > 0 && <> · 🏆 페이북머니 {fmt(myPrize)}원</>}</div>
+          <button className="reward-pill tap" onClick={s.goLeaderboard}>페이북겜머니 <b>₩{fmt(s.wallet)}</b> · 오늘 {dailyRank}위{myPrize > 0 && <> · 🏆 페이북머니 {fmt(myPrize)}원</>} <span className="tap-hint">랭킹 ›</span></button>
         </div>
 
         {/* 정답 공개(reveal) */}
@@ -58,8 +59,13 @@ export default function ResultScreen() {
         </div>
 
         <div className="card blk" style={{ padding: 8 }}>
-          <div style={{ height: 200, position: 'relative' }}>
+          <div className="reveal-chart">
             <Chart game={revealGame} flags={s.settings.ind} mode="reveal" tick={1} />
+          </div>
+          <div className="reveal-legend">
+            <span><i className="lg-buy" />내 진입</span>
+            <span><i className="lg-exit" />청산</span>
+            <span><i className="lg-best" />최선의 한 수</span>
           </div>
         </div>
 
@@ -74,14 +80,12 @@ export default function ResultScreen() {
           ))}
         </div>
 
-        <div className="eval-row">
-          <div className="eval good"><div className="h">좋았던 점</div><p>{review.good}</p></div>
-          <div className="eval caution"><div className="h">주의할 점</div><p>{review.risk}</p></div>
-        </div>
-
-        <div className="card best-card">
-          <div className="h"><span>🎯</span>최선의 한 수</div>
-          <p>{best.ei - g.start}봉 <b>{best.side === 'long' ? '매수' : '공매도'}</b> → {best.xi - g.start}봉 청산 시 최대 <b>{pct(best.ret)}</b> 가능했어요.</p>
+        {/* 캔들이 코칭 — 크고 짧게 */}
+        <div className="coach-stack">
+          <SpeechBubble className="coach" mood="cheer" title="좋았던 점" text={review.good} size={44} />
+          <SpeechBubble className="coach" mood="warn" title="주의할 점" text={review.risk} size={44} />
+          <SpeechBubble className="coach" mood="think" title="최선의 한 수" size={44}
+            text={<>{best.ei - g.start}봉 <b>{best.side === 'long' ? '매수' : '공매도'}</b> → {best.xi - g.start}봉 청산이면 최대 <b>{pct(best.ret)}</b>!</>} />
         </div>
 
         {/* 은근한 탐색 링크(초대형·옵셔널) */}
@@ -99,13 +103,13 @@ export default function ResultScreen() {
 
       <div className="actionbar">
         <div className="row">
-          <button className="btn btn-surface g1" onClick={s.goLeaderboard}>🏆 랭킹</button>
-          {dailyLeft > 0
-            ? <button className="btn btn-red grow14" onClick={s.startDaily} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : `오늘의 종목 다음 판 ▶`}</button>
-            : <button className="btn btn-dark grow14" onClick={s.startDaily} disabled={s.loadingRound}>{s.loadingRound ? '불러오는 중…' : '🎬 광고 보고 한 판 더'}</button>}
+          <button className="btn btn-surface g1" onClick={s.goHome}>🏠 홈</button>
+          <button className="btn btn-dark g1" onClick={s.goLeaderboard}>🏆 랭킹</button>
         </div>
         <div className="home-ind"><i /></div>
       </div>
+
+      <PlayMorePrompt />
     </div>
   )
 }

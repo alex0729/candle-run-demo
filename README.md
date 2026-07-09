@@ -141,11 +141,27 @@ legacy/index-v0.3.html # 이전 프로토타입(단일 파일)
 docs/PRD.md          # 제품 요구사항 정의서
 ```
 
+## 데이터셋 (실데이터 전면 교체)
+
+현재 시나리오는 **국내 실데이터 600종목**입니다(합성 시나리오 제거).
+
+- **KOSPI 300 + KOSDAQ 300** = 총 600종목, 각 종목 1개 시나리오(120 워밍업 + 80 플레이 봉).
+- **일반 보통주만**: ETF/ETN 등 파생·지수형 상품 제외, **우선주·스팩 제외**.
+- **기간**: **2020~2025년(6년)** 데이터만 사용.
+- **선정 기준**: 2020~2025 **평균 거래대금(유동성) 상위 300**(시장별) — 활발히 거래된 대표 종목 위주.
+- 원본: qbrick SQLite DB(`kospi`/`kosdaq` 일별 OHLCV + `CATEGORY` 종목마스터). 대용량이라
+  리포에 미포함, GitHub Release 자산 `db_source`에 보관.
+
 ## 데이터 재생성
 
 ```bash
-python3 scripts/build_data.py          # app/public/data 갱신
-cd app && npm run build                # dist에 반영
+# 1) 원본 DB 내려받기(리포에는 미포함)
+curl -sSL -o qbrick_20260522.db \
+  https://github.com/alex0729/candle-run-demo/releases/download/db_source/qbrick_20260522.db
+# 2) 추출 → app/public/data 갱신
+QBRICK_DB=./qbrick_20260522.db python3 scripts/build_data.py
+# 3) 빌드 반영
+cd app && npm run build
 ```
 
 ## 버전 / 백업

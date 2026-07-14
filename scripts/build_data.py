@@ -1,33 +1,71 @@
-import re, json, os, math, random, shutil
+import re, json, os, math, random, sqlite3, shutil
 random.seed(20260701)
+
+# ---------------------------------------------------------------------------
+# 데이터 소스: qbrick SQLite DB (kospi/kosdaq 일별 OHLCV + CATEGORY 종목마스터)
+#   - 이 DB는 리포에 포함하지 않음(대용량). GitHub Release 자산 `db_source` 에 보관.
+#   - 로컬 경로 또는 환경변수 QBRICK_DB 로 지정. 없으면 Release에서 내려받아 사용.
+# 추출 조건(캔들런 v0.17 데이터 교체):
+#   - KOSPI / KOSDAQ 각 300종목 = 총 600종목
+#   - ETF/ETN 등 제외(일반 보통주만), 우선주 제외
+#   - 2020~2025년(6년) 데이터만 사용
+#   - 종목 선정 = 2020~2025 평균 거래대금(유동성) 상위 300
+# ---------------------------------------------------------------------------
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'app', 'public', 'data')
 SCN_DIR = os.path.join(OUT, 'scenarios')
+
+DB_PATH = os.environ.get('QBRICK_DB', os.path.join(ROOT, 'qbrick_20260522.db'))
+if not os.path.exists(DB_PATH):
+    raise SystemExit(
+        f"DB를 찾을 수 없습니다: {DB_PATH}\n"
+        "GitHub Release 자산에서 내려받아 경로를 지정하세요:\n"
+        "  curl -sSL -o qbrick_20260522.db \\\n"
+        "    https://github.com/alex0729/candle-run-demo/releases/download/db_source/qbrick_20260522.db\n"
+        "  QBRICK_DB=./qbrick_20260522.db python3 scripts/build_data.py")
+
+WARMUP = 120         # 지표 워밍업 구간
+PLAY = 80            # 플레이 가능 봉 수(모드 20/30/50 + 결과 리빌 여유)
+WINDOW = WARMUP + PLAY
+PER_MARKET = 300
+START_DATE, END_DATE = '20200101', '20251231'
+MIN_BARS = WINDOW    # 최소 확보 봉 수
+
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(SCN_DIR, exist_ok=True)
 
-WARMUP = 120
+# ---------- 종목 분류 필터 ----------
+PREF_RE = re.compile(r'우$|우[BC]$|\d우[BC]?$')          # 우선주(이름): …우 / …우B / …2우B
+SPAC_RE = re.compile(r'스팩|기업인수목적|제\s?\d+\s?호$')   # 스팩(기업인수목적회사)
 
-# ---------- helpers: analysis for tagging ----------
+def is_common_stock(name, code, sector):
+    """일반 보통주만 True. ETF/ETN(섹터 etc) · 우선주 · 스팩 · 특수코드(끝자리≠0) 제외."""
+    if (sector or '').strip().lower() == 'etc':
+        return False                       # ETF/ETN/기타 파생·지수형
+    if not code.endswith('0'):
+        return False                       # 보통주 코드는 끝자리 0, 우선주/특수는 5·7·9 등
+    nm = name or ''
+    if PREF_RE.search(nm) or SPAC_RE.search(nm):
+        return False
+    return True
+
+# ---------- 성과 분석(태깅) ----------
 def classify(data, start):
     fwd = data[start:]
     if len(fwd) < 5:
         return 'sideways', 'normal'
     closes = [b['c'] for b in fwd]
     ret = (closes[-1]-closes[0])/closes[0]
-    # volatility: mean abs daily return
-    rets = [abs((closes[i]-closes[i-1])/closes[i-1]) for i in range(1,len(closes))]
-    vol = sum(rets)/len(rets)
-    # max drawdown
+    rets = [abs((closes[i]-closes[i-1])/closes[i-1]) for i in range(1,len(closes)) if closes[i-1]]
+    vol = sum(rets)/len(rets) if rets else 0
     peak=closes[0]; mdd=0
     for c in closes:
-        peak=max(peak,c); mdd=max(mdd,(peak-c)/peak)
+        peak=max(peak,c); mdd=max(mdd,(peak-c)/peak if peak else 0)
     if ret > 0.15: pat='uptrend'
     elif ret < -0.15: pat='downtrend'
     elif vol > 0.045: pat='volatile'
     else: pat='sideways'
-    # difficulty by volatility & drawdown
     if vol < 0.028 and mdd < 0.12: diff='beginner'
     elif vol > 0.05 or mdd > 0.28: diff='advanced'
     else: diff='normal'
@@ -37,132 +75,85 @@ def write_scn(obj):
     with open(os.path.join(SCN_DIR, obj['id']+'.json'), 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, separators=(',',':'))
 
+con = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+con.row_factory = None
+cur = con.cursor()
+
+# 종목 마스터 로드
+meta = {}   # code -> (name, market, sector)
+for code, mkt, name, sector in cur.execute(
+        "SELECT CODE, MARKET, NAME, SECTOR_NAME FROM CATEGORY"):
+    if mkt in ('KOSPI','KOSDAQ') and is_common_stock(name, code, sector):
+        meta[code] = ((name or '').strip(), mkt, (sector or '').strip() or '기타')
+
 manifest_items = []
+counts = {'KOSPI':0, 'KOSDAQ':0}
 
-# ---------- 1) real KOSPI scenarios from prototype ----------
-# ETF/ETN/레버리지/인버스/선물 등 파생·지수형 상품은 제외(일반 단일종목만)
-ETF_PAT = re.compile(r'ETF|ETN|레버리지|인버스|선물|커버드콜|TDF|액티브|KODEX|TIGER|KBSTAR|ARIRANG|KINDEX|KOSEF|KIWOOM|HANARO|TIMEFOLIO|블룸버그|KoAct|\(합성|\bACE\b|\bSOL\b|\bRISE\b')
-html = open(os.path.join(ROOT,'legacy','index-v0.3.html'), encoding='utf-8').read()
-m = re.search(r'<script id="embeddedScenarios"[^>]*>(.*?)</script>', html, re.S)
-real = json.loads(m.group(1))['scenarios']
-excluded_etf = 0
-for s in real:
-    if ETF_PAT.search(s.get('name') or ''):
-        excluded_etf += 1
-        continue
-    data = [{'date':d['date'],'o':int(d['o']),'h':int(d['h']),'l':int(d['l']),'c':int(d['c']),'v':int(d.get('v',0))} for d in s['data']]
-    start = int(s.get('start_index',120))
-    pat, diff = classify(data, start)
-    sid = s['id']
-    recent = (s.get('start_date') or '')[:4] >= '2020'
-    obj = {
-        'id': sid, 'market': s.get('market','KOSPI'), 'sector':(s.get('sector') or '기타').strip(),
-        'source':'real', 'name': s.get('name'), 'code': s.get('code'),
-        'blind_label': s.get('blind_label') or '종목 ?',
-        'warmup': start, 'play_max': len(data)-start,
-        'start_date': s.get('start_date'), 'end_date': s.get('end_date'),
-        'pattern': pat, 'difficulty': diff, 'recent': recent,
-        'data': data
-    }
-    write_scn(obj)
-    manifest_items.append({k:obj[k] for k in ('id','market','sector','source','blind_label','warmup','play_max','start_date','end_date','pattern','difficulty','recent')})
+for mkt, tbl in (('KOSPI','kospi'), ('KOSDAQ','kosdaq')):
+    # 1) 유동성 랭킹: 2020~2025 평균 거래대금 + 봉 수
+    stat = {}
+    for code, n, liq in cur.execute(
+            f"SELECT code, COUNT(*) n, AVG(amount) liq FROM {tbl} "
+            f"WHERE date BETWEEN ? AND ? GROUP BY code", (START_DATE, END_DATE)):
+        stat[code] = (n, liq or 0)
+    # 후보 = 보통주 & 충분한 봉 수, 유동성 내림차순
+    cand = [(c, stat[c][1]) for c in meta
+            if meta[c][1] == mkt and c in stat and stat[c][0] >= MIN_BARS]
+    cand.sort(key=lambda x: -x[1])
+    picked = [c for c, _ in cand[:PER_MARKET]]
+    picked_set = set(picked)
+    print(f"[{mkt}] 보통주 후보(>= {MIN_BARS}봉)={len(cand)} → 선정={len(picked)}")
 
-print('real scenarios(kept):', len(real)-excluded_etf, '| ETF/ETN 제외:', excluded_etf)
+    # 2) 선정 종목의 2020~2025 봉을 한 번에 스캔해서 코드별로 버킷
+    bars_by_code = {c: [] for c in picked}
+    for code, date, o, h, l, c_, v in cur.execute(
+            f"SELECT code, date, open, high, low, close, volume FROM {tbl} "
+            f"WHERE date BETWEEN ? AND ? ORDER BY code, date", (START_DATE, END_DATE)):
+        if code in picked_set:
+            bars_by_code[code].append({'date':date,'o':int(o),'h':int(h),'l':int(l),'c':int(c_),'v':int(v or 0)})
 
-# ---------- 2) synthetic KOSPI/KOSDAQ scenarios (2020+) ----------
-SECTORS = {
- 'KOSPI': ['전기전자','금융업','운수장비','화학','철강금속','유통업','건설업','서비스업','의약품','음식료품'],
- 'KOSDAQ': ['IT부품','제약바이오','2차전지','게임','반도체','엔터미디어','소프트웨어','헬스케어','인터넷','로봇AI']
-}
-BLIND = [chr(ord('A')+i) for i in range(26)]
-
-def gen_dates(n, start_year):
-    # business-day-ish daily dates from a random 2020+ start
-    y = start_year; mo = random.randint(1,10); da = random.randint(1,20)
-    dates=[]; 
-    import datetime
-    d = datetime.date(y,mo,da)
-    while len(dates)<n:
-        if d.weekday()<5:
-            dates.append(d.strftime('%Y%m%d'))
-        d += datetime.timedelta(days=1)
-    return dates
-
-def gen_series(market, kind):
-    n = WARMUP + 90
-    price = (30000+random.random()*120000) if market=='KOSPI' else (3000+random.random()*40000)
-    base_vol = (0.018+random.random()*0.02) if market=='KOSPI' else (0.03+random.random()*0.035)
-    # drift profile by kind
-    drift = {'uptrend':0.004,'downtrend':-0.004,'sideways':0.0004,'volatile':0.0}[kind]
-    # regime change near decision point for realism
-    turn = WARMUP + random.randint(-10,10)
-    vol = base_vol
-    arr=[]
-    for i in range(n):
-        vol = max(base_vol*0.7, vol*0.9 + (base_vol*(0.9+random.random()*0.8))*0.1)
-        dr = drift
-        if kind=='uptrend' and i<turn: dr = drift*0.3
-        if kind=='downtrend' and i<turn: dr = -drift*0.3*-1*0.3
-        if kind=='volatile': dr = (random.random()-0.5)*0.006
-        ret = dr + (random.random()+random.random()+random.random()-1.5)*vol*1.5
-        o = price
-        c = max(500, o*(1+ret))
-        hi = max(o,c)*(1+random.random()*vol*0.8)
-        lo = min(o,c)*(1-random.random()*vol*0.8)
-        big = abs(ret)/vol
-        vbase = (1_000_000 if market=='KOSPI' else 400_000)
-        v = int((0.6+random.random()*0.9+big*0.6)*vbase*(1 if price>40000 else 2.0))
-        # round price to KRX tick-ish
-        def rnd(x):
-            if x>=100000: return int(round(x/100)*100)
-            if x>=10000: return int(round(x/50)*50)
-            if x>=1000: return int(round(x/10)*10)
-            return int(round(x/5)*5)
-        arr.append({'o':rnd(o),'h':rnd(hi),'l':rnd(lo),'c':rnd(c),'v':v})
-        price = c
-    return arr
-
-SYN_PER = {'KOSPI':120,'KOSDAQ':150}
-KINDS = ['uptrend','downtrend','sideways','volatile']
-syn_count=0
-for market, cnt in SYN_PER.items():
-    for j in range(cnt):
-        kind = random.choice(KINDS)
-        start_year = random.choice([2020,2021,2021,2022,2022,2023,2023,2024])
-        arr = gen_series(market, kind)
-        dates = gen_dates(len(arr), start_year)
-        data = [{'date':dates[i], **arr[i]} for i in range(len(arr))]
-        start = WARMUP
-        pat, diff = classify(data, start)
-        sid = f'SYN-{market}-{start_year}-{j:03d}'
-        sector = random.choice(SECTORS[market])
+    # 3) 코드별 윈도우 추출(결정적 랜덤 시작점) → 시나리오 생성
+    for code in sorted(picked):
+        seq = bars_by_code[code]
+        if len(seq) < WINDOW:
+            continue
+        max_start = len(seq) - WINDOW
+        off = random.randint(0, max_start) if max_start > 0 else 0
+        data = seq[off:off+WINDOW]
+        pat, diff = classify(data, WARMUP)
+        name, _, sector = meta[code]
+        start_date = data[WARMUP]['date']
+        end_date = data[-1]['date']
+        sid = f"{mkt}-{code}-{start_date}-{PLAY}"
         obj = {
-            'id': sid, 'market': market, 'sector': sector,
-            'source':'synthetic', 'name': None, 'code': None,
-            'blind_label': '종목 '+random.choice(BLIND),
-            'warmup': start, 'play_max': len(data)-start,
-            'start_date': dates[start], 'end_date': dates[-1],
+            'id': sid, 'market': mkt, 'sector': sector,
+            'source': 'real', 'name': name, 'code': code,
+            'blind_label': '종목 ?',
+            'warmup': WARMUP, 'play_max': PLAY,
+            'start_date': start_date, 'end_date': end_date,
             'pattern': pat, 'difficulty': diff, 'recent': True,
-            'data': data
+            'data': data,
         }
         write_scn(obj)
-        manifest_items.append({k:obj[k] for k in ('id','market','sector','source','blind_label','warmup','play_max','start_date','end_date','pattern','difficulty','recent')})
-        syn_count+=1
+        manifest_items.append({k:obj[k] for k in (
+            'id','market','sector','source','blind_label','warmup','play_max',
+            'start_date','end_date','pattern','difficulty','recent')})
+        counts[mkt] += 1
 
-print('synthetic scenarios:', syn_count)
+con.close()
 
 # ---------- manifest ----------
 from collections import Counter
 manifest = {
-    'version': '0.4',
-    'generated_at': '2026-07-01',
+    'version': '0.17',
+    'generated_at': '2026-07-09',
     'warmup': WARMUP,
     'markets': sorted(set(x['market'] for x in manifest_items)),
     'count': len(manifest_items),
     'by_market': dict(Counter(x['market'] for x in manifest_items)),
     'by_source': dict(Counter(x['source'] for x in manifest_items)),
     'recent_count': sum(1 for x in manifest_items if x['recent']),
-    'scenarios': manifest_items
+    'scenarios': manifest_items,
 }
 with open(os.path.join(OUT,'manifest.json'),'w',encoding='utf-8') as f:
     json.dump(manifest, f, ensure_ascii=False, separators=(',',':'))
@@ -170,6 +161,6 @@ with open(os.path.join(OUT,'manifest.json'),'w',encoding='utf-8') as f:
 print('TOTAL:', manifest['count'])
 print('by_market:', manifest['by_market'])
 print('by_source:', manifest['by_source'])
-print('recent_count:', manifest['recent_count'])
-mfsize = os.path.getsize(os.path.join(OUT,'manifest.json'))
-print('manifest size KB:', round(mfsize/1024,1))
+print('difficulty:', dict(Counter(x['difficulty'] for x in manifest_items)))
+print('pattern:', dict(Counter(x['pattern'] for x in manifest_items)))
+print('manifest size KB:', round(os.path.getsize(os.path.join(OUT,'manifest.json'))/1024,1))

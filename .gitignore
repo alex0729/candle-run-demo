@@ -6,3 +6,7 @@ app/.vite/
 # os
 .DS_Store
 *.log
+# 원본 주가 DB(대용량) — GitHub Release 자산 `db_source`에 보관, 리포엔 미포함
+qbrick_*.db
+*.sqlite
+*.sqlite3
